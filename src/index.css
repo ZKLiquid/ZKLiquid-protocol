@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  scroll-behavior: smooth;
+  background: #101115;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 100%;
+  @apply font-Inter;
+}
+
+@layer base {
+  .heading-primary {
+    @apply font-extrabold font-Poppins text-[30px] leading-[1.21] md:leading-[1.15];
+  }
+}
