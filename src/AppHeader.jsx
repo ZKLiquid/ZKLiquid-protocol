@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
 
 // import { ReactComponent as LineSvg } from 'assets/svg/Line.svg';
@@ -15,18 +15,44 @@ const AppHeader = ({
 }) => {
   const [isDropdown, toggleDropdown] = useToggle();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [navShow, setNavShow] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  const onScroll = (event) => {
+    if (typeof window !== 'undefined') {
+      if (window.scrollY > lastScrollY && window.scrollY > 70) {
+        setNavShow(false);
+      } else {
+        setNavShow(true);
+      }
+      setLastScrollY(window.scrollY);
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', onScroll);
+
+      return () => {
+        window.removeEventListener('scroll', onScroll);
+      };
+    }
+  }, [lastScrollY]);
 
   return (
-    <div className={clsx('sticky md:px-8 px-4 pb-2 top-0 bg-main z-10')}>
+    <div
+      className={clsx(
+        'sticky px-8 pb-2 top-0 z-10 transition-transform duration-500',
+        `${navShow ? 'translate-y-0' : '-translate-y-full ease-out'}`
+      )}
+    >
       {ismd ? (
         <div className={clsx('flex items-center gap-4 cursor-pointer')}>
           {/* <button onClick={toggleSidebar}>
             <span>{isSidebar ? <ToggleSvg /> : <ToggleRightSvg />}</span>
-          </button>
+          </button> */}
 
-          <div className='flex items-center gap-4 flex-1'>
-            <LineSvg /> {headerLinks}
-          </div> */}
+          <div className='flex items-center gap-4 flex-1'>{headerLinks}</div>
           <div className='flex font-display text-[14px] text-[#FFF] font-[700] items-center gap-4 justify-center pt-2'>
             <button
               //   onClick={handleSidebarToggle}

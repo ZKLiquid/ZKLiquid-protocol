@@ -6,13 +6,12 @@ import NewsLetter from '../components/NewsLetter';
 import { ReactComponent as SubtractSvg } from '../assets/svg/subtract.svg';
 import { ReactComponent as SwapSetSvg } from '../assets/svg/SwapSet.svg';
 import { ReactComponent as MoreSvg } from '../assets/svg/more.svg';
-import Footer from '../common/Footer';
 
 const Trade = () => {
   return (
     <>
-      <div className='text-white p-4'>
-        <h3 className='heading-primary'>DEX Aggregator</h3>
+      <div className='text-white p-8'>
+        <h3 className='heading-primary mt-6'>DEX Aggregator</h3>
 
         <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-4 pt-8 max-w-[1136px]'>
           {bridge.map(({ icon, name, price, id }, index) => (
@@ -59,33 +58,45 @@ const Trade = () => {
 
         <div className='grid md:grid-cols-2 gap-4 pt-6'>
           <div className='max-w-[623px]'>Gride One</div>
-          <div className='max-w-[492px] bg-[#191A1F] rounded-xl p-6'>
-            <div>
+          <div className='max-w-[492px] bg-[#191A1F] rounded-xl p-6 font-Roboto'>
+            <div className=''>
               <h3>Swap</h3>
-              <SwapSetSvg />
-            </div>
-
-            <p>From</p>
-            <div>
-              <div>
-                <p>0.5246</p>
-                <p>MAX</p>
-              </div>
-              <div>
-                <p>0.5246</p>
-                <p>Your BTC balance: 0.6280</p>
+              <div className=''>
+                <SwapSetSvg />
               </div>
             </div>
 
-            <p>To</p>
-            <div>
+            <p className='text-[#979797] text-[14px] leading-[18px] mt-4'>
+              From
+            </p>
+            <div className='mt-4 flex justify-between'>
               <div>
-                <p>6,448.99</p>
-                <p>$23,805.00</p>
+                <p className='leading-[32px] text-[26px] font-bold'>0.5246</p>
+                <p className='leading-[18px] text-[13px] font-semibold mt-3'>
+                  MAX
+                </p>
               </div>
-              <div>
+              <div className='text-right'>
                 <p>0.5246</p>
-                <p>1 BTC= 60030.6280</p>
+                <p className='leading-[18px] text-[#979797] text-[13px] font-semibold mt-3'>
+                  Your BTC balance: 0.6280
+                </p>
+              </div>
+            </div>
+
+            <p className='text-[#979797] text-[14px] leading-[18px] mt-4'>To</p>
+            <div className='mt-4 flex justify-between'>
+              <div>
+                <p className='leading-[32px] text-[26px] font-bold'>6,448.99</p>
+                <p className='leading-[18px] text-[#979797] text-[13px] font-semibold mt-3'>
+                  $23,805.00
+                </p>
+              </div>
+              <div className='text-right'>
+                <p>0.5246</p>
+                <p className='leading-[18px] text-[#979797] text-[13px] font-semibold mt-3'>
+                  1 BTC= 60030.6280
+                </p>
               </div>
             </div>
 
@@ -134,5 +145,4 @@ const Trade = () => {
     </>
   );
 };
-
 export default Trade;

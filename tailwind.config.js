@@ -6,6 +6,7 @@ export default {
       fontFamily: {
         Inter: ['Inter', 'sans-serif'],
         Poppins: ['Poppins', 'sans-serif'],
+        Roboto: ['Roboto', 'sans-serif'],
       },
     },
   },

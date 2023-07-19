@@ -19,12 +19,18 @@ const AppSideBar = (props) => {
     isFullSidebarWidth,
   } = props;
 
-  const isSwap = useMatch('/');
-  //   const isDeFi = useMatch('/defi/*');
+  const isSwap = useMatch('/swap');
+  const isDeFi = useMatch('/defi/*');
   const isGameFi = useMatch('/gamefi/*');
   const isNDFT = useMatch('/nft/*');
 
-  const links = isGameFi ? GAME_LINKS : isNDFT ? NFT_LINKS : SWAP_LINKS;
+  const links = isGameFi
+    ? GAME_LINKS
+    : isNDFT
+    ? NFT_LINKS
+    : isDeFi
+    ? DEFI_LINKS
+    : SWAP_LINKS;
 
   return (
     <>
@@ -46,7 +52,7 @@ const AppSideBar = (props) => {
         <div className='sticky top-0'>
           <div
             className={clsx(
-              'p-4 mb-4 relative flex',
+              'p-4 mb-[105px] relative flex',
               isFullSidebarWidth ? '' : 'justify-center'
             )}
           >
@@ -206,8 +212,17 @@ function AppSidebarLink({ link, isFullSidebarWidth, toggleSidebar }) {
 //   ];
 
 const SWAP_LINKS = [
-  { label: 'Trade', to: '/', SvgIcon: TradeSvg },
+  { label: 'Trade', to: '/swap', SvgIcon: TradeSvg },
   { label: 'Bridge Protocol', to: '/bridge-protocol', SvgIcon: BridgeSvg },
+];
+
+const DEFI_LINKS = [
+  {
+    label: 'DeFi Link',
+    to: '/defi',
+    SvgIcon: BridgeSvg,
+    comingSoon: false,
+  },
 ];
 
 const GAME_LINKS = [

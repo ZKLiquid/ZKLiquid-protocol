@@ -1,5 +1,12 @@
 import { useEffect } from 'react';
-import { NavLink, Route, Routes, useMatch } from 'react-router-dom';
+import {
+  NavLink,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useMatch,
+} from 'react-router-dom';
 import clsx from 'clsx';
 
 import useToggle from './hooks/useToggle';
@@ -56,7 +63,8 @@ function App() {
         <AppHeader {...contentProps} />
         {/* Routes */}
         <Routes>
-          <Route path='/' element={<Trade />} />
+          <Route path='/' element={<Navigate to='/swap' replace />} />
+          <Route path='/swap' element={<Trade />} exact />
           <Route path='/bridge-protocol' element={<BridgeProtocol />} />
         </Routes>
         <Footer />
@@ -69,8 +77,8 @@ function App() {
 export default App;
 
 function AppHeaderLink(props) {
-  const isSwap = useMatch('/');
-  // const isDefi = useMatch('/defi/*')
+  const isSwap = useMatch('/swap');
+  const isDefi = useMatch('/defi/*');
   const isGameFi = useMatch('/gamefi/*');
   const isNDFT = useMatch('/nft/*');
 
@@ -78,10 +86,10 @@ function AppHeaderLink(props) {
     <NavLink
       className={({ isActive }) =>
         clsx(
-          'px-5 py-[0.2rem] rounded-md min-w-[60px] text-center font-[700] text-[14px] text-[#FFF] font-display',
-          (['/gamefi', '/nft'].includes(props.to)
+          'px-5 py-2 mt-6 rounded-md min-w-[60px] text-center font-bold text-[14px] text-[#FFF]',
+          (['/gamefi', '/nft', '/defi'].includes(props.to)
             ? isActive
-            : !isGameFi && !isNDFT) && 'bg-primary-main text-[#FFF]'
+            : !isGameFi && !isNDFT && !isDefi) && 'bg-[#2769E4] text-[#FFF]'
         )
       }
       {...props}
@@ -90,8 +98,8 @@ function AppHeaderLink(props) {
 }
 
 const HEADER_LINKS = [
-  { children: 'Swap', to: '/' },
-  // { children: 'DeFi', to: '/defi' },
+  { children: 'Swap', to: '/swap' },
+  { children: 'DeFi', to: '/defi' },
   { children: 'GameFi', to: '/gamefi' },
   { children: 'NFT', to: '/nft' },
 ];
