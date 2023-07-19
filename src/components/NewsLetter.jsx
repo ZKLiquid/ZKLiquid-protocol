@@ -18,7 +18,9 @@ const NewsLetter = () => {
             placeholder='Enter your email'
             className='max-w-[620px]'
           />
-          <button>Notify me</button>
+          <button className='bg-[#FD6221] px-6 rounded-lg py-3'>
+            Notify me
+          </button>
         </div>
       </div>
 

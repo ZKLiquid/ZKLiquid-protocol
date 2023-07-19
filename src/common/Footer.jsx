@@ -10,7 +10,7 @@ import { ReactComponent as Behance } from '../assets/svg/behance.svg';
 
 const Footer = () => {
   return (
-    <footer className='bg-[#101115] mt-28 md:mt-0 p-8'>
+    <footer className='bg-[#101115] mt-28 md:mt-0 p-4'>
       <div className='container'>
         <div className='pt-8 pb-16 md:pt-28'>
           <div className='flex flex-col lg:flex-row gap-12 xl:gap-x-[106px] justify-between'>

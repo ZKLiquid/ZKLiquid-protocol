@@ -68,8 +68,8 @@ function App() {
           <Route path='/bridge-protocol' element={<BridgeProtocol />} />
         </Routes>
         <Footer />
+        <AppSideBar {...contentProps} />
       </div>
-      <AppSideBar {...contentProps} />
     </>
   );
 }
