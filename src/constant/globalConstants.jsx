@@ -2,6 +2,89 @@ import tailwindDefaultTheme from 'tailwindcss/defaultTheme';
 import bridges from '../assets/svg/bridge.svg';
 import numbers from '../assets/svg/number.svg';
 import users from '../assets/svg/users.svg';
+import syntrum from '../assets/svg/syntrum coin.svg';
+import tether from '../assets/svg/tether-coin.svg';
+import binance from '../assets/svg/Binance-Coin.svg';
+
+export const table = [
+  {
+    icon: syntrum,
+    tokenName: 'Syntrum (SYT)',
+    price: '10.4',
+    volume: '21.21M',
+    priceChange: '0.52%',
+  },
+  {
+    icon: tether,
+    tokenName: 'Tether (USDT)',
+    price: '23.4',
+    volume: '21.21M',
+    priceChange: '1.52%',
+  },
+  {
+    icon: binance,
+    tokenName: 'Binance (BNB)',
+    price: '10.4',
+    volume: '21.21M',
+    priceChange: '0.52%',
+  },
+  {
+    icon: binance,
+    tokenName: 'Binance (BNB)',
+    price: '10.4',
+    volume: '21.21M',
+    priceChange: '0.52%',
+  },
+  {
+    icon: binance,
+    tokenName: 'Binance (BNB)',
+    price: '10.4',
+    volume: '21.21M',
+    priceChange: '0.52%',
+  },
+  {
+    icon: binance,
+    tokenName: 'Binance (BNB)',
+    price: '10.4',
+    volume: '21.21M',
+    priceChange: '0.52%',
+  },
+  {
+    icon: binance,
+    tokenName: 'Binance (BNB)',
+    price: '10.4',
+    volume: '21.21M',
+    priceChange: '0.52%',
+  },
+  {
+    icon: binance,
+    tokenName: 'Binance (BNB)',
+    price: '10.4',
+    volume: '21.21M',
+    priceChange: '0.52%',
+  },
+  {
+    icon: binance,
+    tokenName: 'Binance (BNB)',
+    price: '10.4',
+    volume: '21.21M',
+    priceChange: '0.52%',
+  },
+  {
+    icon: binance,
+    tokenName: 'Binance (BNB)',
+    price: '10.4',
+    volume: '21.21M',
+    priceChange: '0.52%',
+  },
+  {
+    icon: binance,
+    tokenName: 'Binance (BNB)',
+    price: '10.4',
+    volume: '21.21M',
+    priceChange: '0.52%',
+  },
+];
 
 export const bridge = [
   {

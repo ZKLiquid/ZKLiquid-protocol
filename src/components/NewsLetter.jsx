@@ -3,7 +3,7 @@ import Input from './Input';
 
 const NewsLetter = () => {
   return (
-    <div className='max-w-[763px] pt-24'>
+    <div className='pt-24'>
       <div className='flex flex-col justify-center items-center'>
         <div className='max-w-[560px] font-semibold text-[22px] font-Poppins leading-[33px] text-center'>
           <h3>Updates Subscription!</h3>

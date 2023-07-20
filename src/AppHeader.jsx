@@ -15,37 +15,32 @@ const AppHeader = ({
 }) => {
   const [isDropdown, toggleDropdown] = useToggle();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [navShow, setNavShow] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  // const [navShow, setNavShow] = useState(true);
+  // const [lastScrollY, setLastScrollY] = useState(0);
 
-  const onScroll = (event) => {
-    if (typeof window !== 'undefined') {
-      if (window.scrollY > lastScrollY && window.scrollY > 70) {
-        setNavShow(false);
-      } else {
-        setNavShow(true);
-      }
-      setLastScrollY(window.scrollY);
-    }
-  };
+  // const onScroll = (event) => {
+  //   if (typeof window !== 'undefined') {
+  //     if (window.scrollY > lastScrollY && window.scrollY > 70) {
+  //       setNavShow(false);
+  //     } else {
+  //       setNavShow(true);
+  //     }
+  //     setLastScrollY(window.scrollY);
+  //   }
+  // };
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.addEventListener('scroll', onScroll);
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined') {
+  //     window.addEventListener('scroll', onScroll);
 
-      return () => {
-        window.removeEventListener('scroll', onScroll);
-      };
-    }
-  }, [lastScrollY]);
+  //     return () => {
+  //       window.removeEventListener('scroll', onScroll);
+  //     };
+  //   }
+  // }, [lastScrollY]);
 
   return (
-    <div
-      className={clsx(
-        'sticky px-8 pb-2 top-0 z-10 transition-transform duration-500',
-        `${navShow ? 'translate-y-0' : '-translate-y-full ease-out'}`
-      )}
-    >
+    <div className={clsx('sticky px-8 pb-2 top-0 z-10 bg-[#101115]')}>
       {ismd ? (
         <div className={clsx('flex items-center gap-4 cursor-pointer')}>
           {/* <button onClick={toggleSidebar}>
@@ -56,7 +51,7 @@ const AppHeader = ({
           <div className='flex font-display text-[14px] text-[#FFF] font-[700] items-center gap-4 justify-center pt-2'>
             <button
               //   onClick={handleSidebarToggle}
-              className='flex items-center space-x-2 bg-paper py-1.5 px-3 rounded-full'
+              className='flex items-center space-x-2 py-1.5 px-3 text-white rounded-full'
             >
               {/* <WalletSvg /> */}
               Wallet Balance

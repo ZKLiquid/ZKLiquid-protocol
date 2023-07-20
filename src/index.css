@@ -16,3 +16,14 @@ body {
     @apply font-extrabold font-Poppins text-[30px] leading-[1.21] md:leading-[1.15];
   }
 }
+
+/* For Webkit-based browsers (Chrome, Safari and Opera) */
+.scroll-track-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* For IE, Edge and Firefox */
+.scroll-track-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}

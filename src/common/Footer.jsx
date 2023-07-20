@@ -10,22 +10,22 @@ import { ReactComponent as Behance } from '../assets/svg/behance.svg';
 
 const Footer = () => {
   return (
-    <footer className='bg-[#101115] mt-28 md:mt-0 p-4'>
-      <div className='container'>
+    <footer className='bg-[#101115] mt-28 md:mt-0 p-4 md:p-8'>
+      <div className='container mx-auto'>
         <div className='pt-8 pb-16 md:pt-28'>
           <div className='flex flex-col lg:flex-row gap-12 xl:gap-x-[106px] justify-between'>
             <div className='lg:max-w-[450px] w-full flex-shrink-0 lg:order-2'>
-              <div className='flex justify-end'>
+              <div className=''>
                 <SyntrumLogo />
               </div>
-              <div className='flex justify-end text-right mt-3'>
-                <p className='text-[#6D7A86] max-w-[323px] text-[16px] font-normal'>
+              <div className='mt-3'>
+                <p className='text-[#6D7A86] text-[16px] font-normal max-w-[325px]'>
                   A multichain blockchain for interconnected product in DeFi,
                   Gaming and NFT. The future of blockchain interoperability.
                 </p>
               </div>
 
-              <div className='flex justify-end mt-6 gap-5 cursor-pointer'>
+              <div className='mt-6 gap-5 cursor-pointer flex'>
                 <FaceBook />
                 <IG />
                 <Twitter />
@@ -33,7 +33,7 @@ const Footer = () => {
                 <Behance />
               </div>
             </div>
-            <div className='max-w-[800px] w-full lg:order-1'>
+            <div className='w-full lg:order-1'>
               <div className='grid sm:grid-cols-2 md:grid-cols-4 gap-y-11 gap-x-12'>
                 <div>
                   <p className='text-sm font-semibold text-white uppercase'>
