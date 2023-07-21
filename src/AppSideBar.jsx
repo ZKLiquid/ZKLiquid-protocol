@@ -36,7 +36,7 @@ const AppSideBar = (props) => {
     <>
       {!ismd && isSidebar && (
         <div
-          className='fixed left-0 right-0 top-0 bottom-0 bg-black bg-opacity-25 z-10'
+          className='fixed left-0 right-0 top-0 bottom-0 bg-[#101115] bg-opacity-25 z-10'
           // className='fixed left-0 right-0 top-0 bottom-0 bg-black bg-opacity-25 inset-y-0 z-10'
           onClick={toggleSidebar}
         />
@@ -44,7 +44,7 @@ const AppSideBar = (props) => {
 
       <div
         className={clsx(
-          'fixed left-0 top-0 bottom-0 border-r border-[#191A1F] transition-all z-10 md:z-0 overflow-y-auto',
+          'fixed left-0 top-0 bottom-0 border-r border-[#191A1F] bg-[#101115] transition-all z-10 md:z-0 overflow-y-auto',
           !ismd && (isSidebar ? 'translate-x-0' : '-translate-x-full')
         )}
         style={{ width: sidebarWidth }}
@@ -52,7 +52,7 @@ const AppSideBar = (props) => {
         <div className='sticky top-0'>
           <div
             className={clsx(
-              'p-4 mb-[105px] relative flex',
+              'p-4 md:mb-[105px] relative flex',
               isFullSidebarWidth ? '' : 'justify-center'
             )}
           >
