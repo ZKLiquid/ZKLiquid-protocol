@@ -613,7 +613,7 @@ const Trade = (props) => {
           </>
         )}
 
-        {/* <NewsLetter /> */}
+        <NewsLetter />
       </div>
     </>
   );

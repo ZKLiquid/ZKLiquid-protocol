@@ -10,7 +10,7 @@ const Input = ({
   ...rest
 }) => {
   const baseClassNames = classNames(
-    'appearance-none rounded-lg w-[420px] py-3 px-4 bg-white border text-[#6B7280] text-[17px] border-solid leading-tight focus:outline-none focus:shadow-outline',
+    'appearance-none rounded-lg py-3 px-4 bg-white border text-[#6B7280] text-[17px] border-solid leading-tight focus:outline-none focus:shadow-outline',
     className
   );
 

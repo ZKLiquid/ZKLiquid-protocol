@@ -14,18 +14,18 @@ const Footer = () => {
       <div className='container mx-auto'>
         <div className='pt-8 pb-16 md:pt-28'>
           <div className='flex flex-col lg:flex-row gap-12 xl:gap-x-[106px] justify-between'>
-            <div className='lg:max-w-[450px] w-full flex-shrink-0 lg:order-2'>
-              <div className=''>
+            <div className='lg:max-w-[350px] w-full flex-shrink-0 lg:order-2'>
+              <div className='md:flex md:justify-end'>
                 <SyntrumLogo />
               </div>
-              <div className='mt-3'>
+              <div className='mt-3 md:flex md:justify-end md:text-right'>
                 <p className='text-[#6D7A86] text-[16px] font-normal max-w-[325px]'>
                   A multichain blockchain for interconnected product in DeFi,
                   Gaming and NFT. The future of blockchain interoperability.
                 </p>
               </div>
 
-              <div className='mt-6 gap-5 cursor-pointer flex'>
+              <div className='mt-6 gap-5 cursor-pointer flex md:justify-end'>
                 <FaceBook />
                 <IG />
                 <Twitter />
@@ -33,7 +33,7 @@ const Footer = () => {
                 <Behance />
               </div>
             </div>
-            <div className='w-full lg:order-1'>
+            <div className='max-w-[800px] w-full lg:order-1'>
               <div className='grid sm:grid-cols-2 md:grid-cols-4 gap-y-11 gap-x-12'>
                 <div>
                   <p className='text-sm font-semibold text-white uppercase'>

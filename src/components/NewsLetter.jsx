@@ -3,28 +3,28 @@ import Input from './Input';
 
 const NewsLetter = () => {
   return (
-    <div className='pt-24 md:p-8 p-4'>
-      <div className='flex flex-col justify-center items-center'>
-        <div className='font-semibold text-[22px] font-Poppins leading-[33px] text-center'>
-          <h3>Updates Subscription!</h3>
-          <h3>Never miss our latest updates!</h3>
-        </div>
-
-        <div className='gap-4'>
-          <Input
-            type='email'
-            id='email'
-            name='email'
-            placeholder='Enter your email'
-            className=''
-          />
-          <button className='bg-[#FD6221] px-6 rounded-lg py-3'>
-            Notify me
-          </button>
-        </div>
+    <div className='mt-20'>
+      <div className='font-semibold text-[22px] font-Poppins leading-[33px] text-center'>
+        <h3>Updates Subscription!</h3>
+        <h3>Never miss our latest updates!</h3>
       </div>
 
-      <div className='text-center'>
+      <div className='gap-4 flex flex-col md:flex-row justify-center mt-10'>
+        <input
+          name='email'
+          // value={formValues.email}
+          // onChange={handleInputChange}
+          className='py-3 rounded-lg pr-56 pl-6'
+          type='text'
+          placeholder='Enter your email'
+        />
+
+        <button className='bg-[#FD6221] rounded-lg py-3 px-3' type='submit'>
+          Notify me
+        </button>
+      </div>
+
+      <div className='md:text-center md:mr-40'>
         <p className='text-[12px] text-[#9BA6B7] font-medium pt-2'>
           We care about the protection of your data. Read our{' '}
           <span className='text-[#3772FF]'>Privacy Policy.</span>{' '}
