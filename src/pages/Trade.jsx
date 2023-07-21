@@ -194,11 +194,13 @@ const Trade = (props) => {
       {islg ? (
         <>
           <div className='bg-[#191A1F] rounded-xl p-6 font-Roboto mt-10'>
-            <div className=''>
+            <div className='flex items-center justify-center gap-2'>
+              {/* <div className='flex justify-between'> */}
               <h3>Swap</h3>
               <div className=''>
                 <SwapSetSvg />
               </div>
+              {/* </div> */}
             </div>
 
             <p className='text-[#979797] text-[14px] leading-[18px] mt-4'>
