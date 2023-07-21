@@ -19,7 +19,10 @@ const NewsLetter = () => {
           placeholder='Enter your email'
         />
 
-        <button className='bg-[#FD6221] rounded-lg py-3 px-3' type='submit'>
+        <button
+          className='bg-[#FD6221] shadow-boxShadows bg-gradient-to-r from-[#FD6221] to-[#FB167C] rounded-lg py-3 px-3'
+          type='submit'
+        >
           Notify me
         </button>
       </div>

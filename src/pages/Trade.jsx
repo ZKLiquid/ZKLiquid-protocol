@@ -59,6 +59,19 @@ const Trade = (props) => {
     // logic here for what happens when the button is clicked
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Assuming 'table' and 'itemsPerPage' are defined elsewhere in your code
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(table.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, table.length);
+  const currentPageData = table.slice(startIndex, endIndex);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   const historyTab = (
     <>
       {islg ? (
@@ -111,6 +124,11 @@ const Trade = (props) => {
                   ))}
                 </tbody>
               </table>
+              {/* <Pagination
+                totalPages={totalPages}
+                currentPage={currentPage}
+                onPageChange={handlePageChange}
+              /> */}
             </div>
           </div>{' '}
         </>
@@ -294,8 +312,8 @@ const Trade = (props) => {
               </div>
             </div>
 
-            <div className='bg-[#33ED8D] rounded-lg relative mt-12 max-w-[440px]'>
-              <div className='bg-[#11C6B3] rounded-lg absolute -top-4 left-4 p-3'>
+            <div className='bg-gradient-to-b from-[#33ED8D] to-[#09BDBB] rounded-lg relative mt-12 max-w-[440px]'>
+              <div className='bg-gradient-to-b from-[#11C6B3] to-[#7A6CAC] rounded-lg absolute -top-4 left-4 p-3'>
                 <p className='text-[14px] text-bold leading-[16px] text-[#000]'>
                   Via Uniswap V3
                 </p>
@@ -343,7 +361,7 @@ const Trade = (props) => {
               View More DEXs <MoreSvg />
             </p>
 
-            <button className='text-[16px] bg-[#DC40A4] w-full rounded-lg mt-6 py-3'>
+            <button className='text-[16px] bg-gradient-to-r from-[#DC40A4] to-[#6749D5] w-full rounded-lg mt-6 py-3'>
               Approve
             </button>
           </div>{' '}
@@ -569,7 +587,7 @@ const Trade = (props) => {
               </a>
             </p>
           </div>
-          <div className='bg-gradient-to-b from-[#33ED8D] via-[#09BDBB] h-full p-2 rounded-xl mt-4 md:mt-0'>
+          <div className='bg-gradient_custom h-full p-4 rounded-xl mt-4 md:mt-0'>
             <p className='text-[14px] font-bold leading-[20px]'>
               Add Bridge Liquidity
             </p>
@@ -619,3 +637,98 @@ const Trade = (props) => {
   );
 };
 export default Trade;
+
+const Pagination = ({ totalPages, currentPage, onPageChange }) => {
+  const pageNumbers = [];
+
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+
+  const handlePrevious = () => {
+    if (currentPage > 1) {
+      onPageChange(currentPage - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentPage < totalPages) {
+      onPageChange(currentPage + 1);
+    }
+  };
+
+  const handlePageClick = (page) => {
+    onPageChange(page);
+  };
+
+  return (
+    <div className='flex items-center justify-center mt-6'>
+      <button
+        onClick={handlePrevious}
+        disabled={currentPage === 1}
+        className='px-2 py-1 text-[#23DB9F] hover:text-white'
+      >
+        {'<= Previous'}
+      </button>
+
+      <span
+        onClick={() => handlePageClick(1)}
+        className={`px-2 py-1 ${
+          currentPage === 1 ? 'text-white bg-[#23DB9F]' : 'text-[#6D7A86]'
+        } hover:text-white hover:bg-[#23DB9F] cursor-pointer`}
+      >
+        {1}
+      </span>
+
+      {currentPage > 4 && <span className='px-2 py-1 text-[#6D7A86]'>...</span>}
+
+      {pageNumbers.map((page) => {
+        if (
+          page === 1 ||
+          page === totalPages ||
+          (page >= currentPage - 1 && page <= currentPage + 1)
+        ) {
+          return (
+            <span
+              key={page}
+              onClick={() => handlePageClick(page)}
+              className={`px-2 py-1 ${
+                page === currentPage
+                  ? 'text-white bg-[#23DB9F]'
+                  : 'text-[#6D7A86]'
+              } hover:text-white hover:bg-[#23DB9F] cursor-pointer`}
+            >
+              {page}
+            </span>
+          );
+        }
+        return null;
+      })}
+
+      {currentPage < totalPages - 3 && (
+        <span className='px-2 py-1 text-[#6D7A86]'>...</span>
+      )}
+
+      {totalPages > 1 && (
+        <span
+          onClick={() => handlePageClick(totalPages)}
+          className={`px-2 py-1 ${
+            currentPage === totalPages
+              ? 'text-white bg-[#23DB9F]'
+              : 'text-[#6D7A86]'
+          } hover:text-white hover:bg-[#23DB9F] cursor-pointer`}
+        >
+          {totalPages}
+        </span>
+      )}
+
+      <button
+        onClick={handleNext}
+        disabled={currentPage === totalPages}
+        className='px-2 py-1 text-[#23DB9F] hover:text-white'
+      >
+        {'Next =>'}
+      </button>
+    </div>
+  );
+};
