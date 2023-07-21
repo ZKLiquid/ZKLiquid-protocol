@@ -535,7 +535,10 @@ const Trade = (props) => {
         <div className='w-full'>
           <div className='flex overflow-x-scroll flex-shrink-0 scroll-track-hide gap-4 pt-8'>
             {bridge.map(({ icon, name, price, id }, index) => (
-              <div className='flex w-full items-center min-w-[272px] gap-4 bg-[#191A1F] rounded-xl p-3 hover:bg-opacity-80'>
+              <div
+                key={index}
+                className='flex w-full items-center min-w-[272px] gap-4 bg-[#191A1F] rounded-xl p-3 hover:bg-opacity-80'
+              >
                 <img src={icon} alt='' />
                 <div>
                   <p className='text-[#6D7A86] text-[14px] font-medium'>
@@ -551,10 +554,10 @@ const Trade = (props) => {
           </div>
         </div>
 
-        <div className='flex flex-wrap items-center bg-[#191A1F] gap-4 rounded-2xl mt-5 px-2 py-3'>
+        <div className='md:flex flex-wrap md:flex-nowrap items-center bg-[#191A1F] gap-4 rounded-2xl mt-5 px-2 py-3'>
           <SubtractSvg />
           <div>
-            <h3 className='font-Poppins text-[24px] font-black leading-[30px]'>
+            <h3 className='font-Poppins text-[24px] font-black leading-[30px] mt-4 md:mt-0'>
               Syntrum DEX Aggregator
             </h3>
             <p className='text-[14px] leading-[20px] font-medium text-[#9BA6B7] pt-2'>
@@ -566,7 +569,7 @@ const Trade = (props) => {
               </a>
             </p>
           </div>
-          <div className='bg-gradient-to-b from-[#33ED8D] via-[#09BDBB] h-full p-2 rounded-xl'>
+          <div className='bg-gradient-to-b from-[#33ED8D] via-[#09BDBB] h-full p-2 rounded-xl mt-4 md:mt-0'>
             <p className='text-[14px] font-bold leading-[20px]'>
               Add Bridge Liquidity
             </p>

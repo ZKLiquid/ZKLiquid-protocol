@@ -3,20 +3,20 @@ import Input from './Input';
 
 const NewsLetter = () => {
   return (
-    <div className='pt-24'>
+    <div className='pt-24 md:p-8 p-4'>
       <div className='flex flex-col justify-center items-center'>
-        <div className='max-w-[560px] font-semibold text-[22px] font-Poppins leading-[33px] text-center'>
+        <div className='font-semibold text-[22px] font-Poppins leading-[33px] text-center'>
           <h3>Updates Subscription!</h3>
           <h3>Never miss our latest updates!</h3>
         </div>
 
-        <div className='flex flex-wrap items-center gap-4 pt-8'>
+        <div className='gap-4'>
           <Input
             type='email'
             id='email'
             name='email'
             placeholder='Enter your email'
-            className='max-w-[620px]'
+            className=''
           />
           <button className='bg-[#FD6221] px-6 rounded-lg py-3'>
             Notify me

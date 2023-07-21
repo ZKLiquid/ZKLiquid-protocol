@@ -14,6 +14,7 @@ import useToggle from './hooks/useToggle';
 
 const AppHeader = ({
   ismd,
+  islg,
   headerLinks,
   toggleSidebar,
   isFullSidebarWidth,
@@ -44,7 +45,7 @@ const AppHeader = ({
 
   return (
     <div className={clsx('sticky md:px-8 px-4 pb-2 top-0 z-10 bg-[#101115]')}>
-      {ismd ? (
+      {islg ? (
         <div className={clsx('flex items-center gap-4 cursor-pointer')}>
           {/* <button onClick={toggleSidebar}>
             <span>{isSidebar ? <ToggleSvg /> : <ToggleRightSvg />}</span>
