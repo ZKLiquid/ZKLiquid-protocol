@@ -20,7 +20,7 @@ const NewsLetter = () => {
         />
 
         <button
-          className='bg-[#FD6221] shadow-boxShadows bg-gradient-to-r from-[#FD6221] to-[#FB167C] rounded-lg py-3 px-3'
+          className='bg-[#FD6221] shadow-boxShadows bg-gradient-to-br from-[#FD6221] to-[#FB167C] rounded-lg py-3 px-3'
           type='submit'
         >
           Notify me

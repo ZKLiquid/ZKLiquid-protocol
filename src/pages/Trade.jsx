@@ -584,7 +584,11 @@ const Trade = (props) => {
               The largest and most popular DEXs like UniSwap, PancakeSwap, and
               more all in one place. Syntrum DEX Aggregator ensures that every
               trade gets the best rate
-              <a className='text-[#4DFFDF]' href='#' target='_blank'>
+              <a
+                className='bg-clip-text bg-gradient-to-r ml-2 text-transparent from-[#4DFFDF] to-[#4DA1FF]'
+                href='#'
+                target='_blank'
+              >
                 Learn more about Syntrum DEX Aggregator
               </a>
             </p>
