@@ -489,8 +489,8 @@ const Trade = (props) => {
               </div>
             </div>
 
-            <div className='bg-[#33ED8D] rounded-lg relative mt-12 max-w-[440px]'>
-              <div className='bg-[#11C6B3] rounded-lg absolute -top-4 left-4 p-3'>
+            <div className='bg-gradient-to-b from-[#33ED8D] to-[#09BDBB] rounded-lg relative mt-12 max-w-[440px]'>
+              <div className='bg-gradient-to-b from-[#11C6B3] to-[#7A6CAC] rounded-lg absolute -top-4 left-4 p-3'>
                 <p className='text-[14px] text-bold leading-[16px] text-[#000]'>
                   Via Uniswap V3
                 </p>
@@ -538,7 +538,7 @@ const Trade = (props) => {
               View More DEXs <MoreSvg />
             </p>
 
-            <button className='text-[16px] bg-[#DC40A4] w-full rounded-lg mt-6 py-3'>
+            <button className='text-[16px] bg-gradient-to-r from-[#DC40A4] to-[#6749D5] w-full rounded-lg mt-6 py-3'>
               Approve
             </button>
           </div>{' '}

@@ -44,7 +44,7 @@ const AppSideBar = (props) => {
 
       <div
         className={clsx(
-          'fixed left-0 top-0 bottom-0 border-r border-[#191A1F] bg-[#101115] transition-all z-10 md:z-0 overflow-y-auto',
+          'fixed left-0 top-0 bottom-0 border-r border-[#191A1F] bg-[#101115] transition-all z-10 md:z-0 overflow-y-auto overflow-x-hidden',
           !ismd && (isSidebar ? 'translate-x-0' : '-translate-x-full')
         )}
         style={{ width: sidebarWidth }}
