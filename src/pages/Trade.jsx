@@ -550,7 +550,7 @@ const Trade = (props) => {
   return (
     <>
       <div className='text-white md:p-8 p-4'>
-        <h3 className='heading-primary mt-4'>DEX Aggregator</h3>
+        <h3 className='heading-primary'>DEX Aggregator</h3>
 
         <div className='w-full'>
           <div className='flex overflow-x-scroll flex-shrink-0 scroll-track-hide gap-4 pt-8'>
@@ -577,7 +577,7 @@ const Trade = (props) => {
         <div className='md:flex flex-wrap md:flex-nowrap items-center bg-[#191A1F] gap-4 rounded-2xl mt-5 px-2 py-3'>
           <SubtractSvg />
           <div>
-            <h3 className='font-Poppins text-[24px] font-black leading-[30px] mt-4 md:mt-0'>
+            <h3 className='font-Poppins md:text-[24px] text-[20px] font-black leading-[30px] mt-4 md:mt-0'>
               Syntrum DEX Aggregator
             </h3>
             <p className='text-[14px] leading-[20px] font-medium text-[#9BA6B7] pt-2'>

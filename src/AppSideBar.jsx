@@ -52,7 +52,7 @@ const AppSideBar = (props) => {
         <div className='sticky top-0'>
           <div
             className={clsx(
-              'p-4 md:mb-[105px] relative flex',
+              'p-4 md:mb-[81px] relative flex',
               isFullSidebarWidth ? '' : 'justify-center'
             )}
           >

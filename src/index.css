@@ -13,7 +13,7 @@ body {
 
 @layer base {
   .heading-primary {
-    @apply font-extrabold font-Poppins text-[30px] leading-[1.21] md:leading-[1.15];
+    @apply font-extrabold font-Poppins md:text-[28px] text-[20px] leading-[1.21] md:leading-[1.15];
   }
 }
 

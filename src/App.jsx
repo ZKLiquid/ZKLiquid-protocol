@@ -86,7 +86,7 @@ function AppHeaderLink(props) {
     <NavLink
       className={({ isActive }) =>
         clsx(
-          'px-5 py-2 mt-6 rounded-md min-w-[60px] text-center font-bold text-[14px] text-[#FFF]',
+          'px-5 mt-1 rounded-md py-1.5 text-center font-bold text-[14px] text-[#FFF]',
           (['/gamefi', '/nft', '/defi'].includes(props.to)
             ? isActive
             : !isGameFi && !isNDFT && !isDefi) && 'bg-[#2769E4] text-[#FFF]'
