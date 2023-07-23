@@ -44,11 +44,7 @@ const AppHeader = ({
   // }, [lastScrollY]);
 
   return (
-    <div
-      className={clsx(
-        'sticky md:px-8 px-4 top-0 z-10 bg-[#101115] overflow-x-scroll'
-      )}
-    >
+    <div className={clsx('sticky md:px-8 px-4 top-0 z-10 bg-[#101115]')}>
       {islg ? (
         <div className={clsx('flex items-center gap-4 cursor-pointer')}>
           {/* <button onClick={toggleSidebar}>
