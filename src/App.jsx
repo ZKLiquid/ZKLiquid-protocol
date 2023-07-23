@@ -64,7 +64,7 @@ function App() {
         {/* Routes */}
         <Routes>
           <Route path='/' element={<Navigate to='/swap' replace />} />
-          <Route path='/swap' element={<Trade />} exact />
+          <Route path='/swap' element={<Trade />} />
           <Route path='/bridge-protocol' element={<BridgeProtocol />} />
         </Routes>
         <Footer />
