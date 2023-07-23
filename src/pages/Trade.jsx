@@ -73,7 +73,7 @@ const Trade = (props) => {
 
             <div className='border border-b-[1px] border-[#20212C] my-4'></div>
 
-            <div className='px-6 py-1 font-Roboto max-h-[754px] bg-[#191A1F] rounded-xl pb-10'>
+            <div className='px-6 py-1 font-Roboto max-h-[754px] bg-[#191A1F] rounded-xl pb-14'>
               <table className='min-w-full mt-2'>
                 <thead className='text-[12px] font-bold px-2 py-3 text-[#FFF] capitalize'>
                   <tr>
@@ -134,7 +134,7 @@ const Trade = (props) => {
 
             <div className='border border-b-[1px] border-[#20212C] my-4'></div>
 
-            <div className='px-3 py-1 font-Roboto max-h-[754px] bg-[#191A1F] rounded-xl'>
+            <div className='px-3 py-1 font-Roboto max-h-[754px] bg-[#191A1F] rounded-xl mb-14'>
               <table className='min-w-full mt-6'>
                 <thead className='text-[14px] px-2 py-3 text-[#6D7A86] capitalize'>
                   <tr>
