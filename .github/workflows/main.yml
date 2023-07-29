@@ -16,7 +16,7 @@ jobs:
           server: "139.144.25.39"
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           local_path: "./*"
-          remote_path: "/home/frontdev2/www/syntrum.com/"
+          remote_path: "/home/frontdev2/www/multiswap.syntrum.com/"
           args: "-o ConnectTimeout=5"
       - name: Execute SSH commmands on remote server
         uses: JimCronqvist/action-ssh@master
