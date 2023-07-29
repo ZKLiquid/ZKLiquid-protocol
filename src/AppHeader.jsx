@@ -11,6 +11,7 @@ import { ReactComponent as DotSvgs } from './assets/svg/Dot.svg';
 
 import Logo from './common/Logo';
 import useToggle from './hooks/useToggle';
+import ConnectWalletButton from './components/ConnectWalletButton';
 
 const AppHeader = ({
   ismd,
@@ -51,23 +52,24 @@ const AppHeader = ({
             <span>{isSidebar ? <ToggleSvg /> : <ToggleRightSvg />}</span>
           </button> */}
 
-          <div className='flex items-center gap-4 flex-1'>{headerLinks}</div>
-          <div className='flex text-[14px] text-[#FFF] fon-bold items-center gap-4 justify-center pt-2'>
-            <button className='flex gap-2 items-center bg-[#1A1C22] p-2 rounded-full'>
+          <div className="flex items-center gap-4 flex-1">{headerLinks}</div>
+          <div className="flex text-[14px] text-[#FFF] fon-bold items-center gap-4 justify-center pt-2">
+            {/* <button className="flex gap-2 items-center bg-[#1A1C22] p-2 rounded-full">
               <COinsSvg />
               0x573e ... 806b
               <DotSvg />
-            </button>
+            </button> */}
 
             <button
               //   onClick={handleSidebarToggle}
-              className='flex items-center gap-2 p-2 bg-[#1A1C22] rounded-full'
+              className="flex items-center gap-2 p-2 bg-[#1A1C22] rounded-full"
             >
               <WalletSvg />
               Wallet Balance
             </button>
+            <ConnectWalletButton />
 
-            <button className='flex items-center gap-2 p-2 bg-[#1A1C22] rounded-full'>
+            <button className="flex items-center gap-2 p-2 bg-[#1A1C22] rounded-full">
               <BinanceSvg />
               <ChevronSvg />
             </button>
@@ -80,11 +82,11 @@ const AppHeader = ({
           )}
         >
           <HamburgerMenuSvg
-            className='cursor-pointer'
+            className="cursor-pointer"
             onClick={toggleSidebar}
           />
           <Logo />
-          <DotSvgs className='cursor-pointer' onClick={toggleDropdown} />
+          <DotSvgs className="cursor-pointer" onClick={toggleDropdown} />
           <div
             className={clsx(
               'absolute left-0 right-0 -top-1 bg-[#101115] py-4 text-[14px] font-bold',
@@ -92,12 +94,12 @@ const AppHeader = ({
             )}
           >
             <span
-              className='cursor-pointer font-[900] text-[18px]'
+              className="cursor-pointer font-[900] text-[18px]"
               onClick={toggleDropdown}
             >
               X
             </span>
-            <button className='flex gap-2 items-center bg-[#1A1C22] p-2 rounded-full w-full'>
+            <button className="flex gap-2 items-center bg-[#1A1C22] p-2 rounded-full w-full">
               <COinsSvg />
               0x573e ... 806b
               <DotSvg />
@@ -105,13 +107,13 @@ const AppHeader = ({
 
             <button
               // onClick={handleSidebarToggle}
-              className='flex items-center text-[14px] font-bold space-x-2 bg-[#1A1C22] p-2 rounded-full mt-4 w-full'
+              className="flex items-center text-[14px] font-bold space-x-2 bg-[#1A1C22] p-2 rounded-full mt-4 w-full"
             >
               <WalletSvg />
               Wallet Balance
             </button>
 
-            <button className='flex items-center justify-between w-full mt-3 gap-2 p-2 bg-[#1A1C22] rounded-full'>
+            <button className="flex items-center justify-between w-full mt-3 gap-2 p-2 bg-[#1A1C22] rounded-full">
               <BinanceSvg />
               <ChevronSvg />
             </button>
