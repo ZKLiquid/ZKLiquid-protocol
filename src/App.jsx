@@ -1,13 +1,6 @@
-import { useEffect } from 'react';
-import {
-  NavLink,
-  Navigate,
-  Outlet,
-  Route,
-  Routes,
-  useMatch,
-} from 'react-router-dom';
 import clsx from 'clsx';
+import { useEffect } from 'react';
+import { NavLink, Navigate, Route, Routes, useMatch } from 'react-router-dom';
 
 import useToggle from './hooks/useToggle';
 import useMediaQuery from './hooks/useMediaQuery';
@@ -26,26 +19,52 @@ import BridgeProtocol from './pages/BridgeProtocol';
 import Footer from './common/Footer';
 import 'react-toastify/dist/ReactToastify.css';
 
-import {
-  EthereumClient,
-  w3mConnectors,
-  w3mProvider,
-} from '@web3modal/ethereum';
-import { Web3Modal } from '@web3modal/react';
-import { configureChains, createConfig, WagmiConfig } from 'wagmi';
-import { mainnet, polygon } from 'wagmi/chains';
+// wagmi imports
+import { WagmiConfig, createConfig, configureChains } from 'wagmi';
+
+import { mainnet, polygon, bsc } from 'wagmi/chains';
+
+import { infuraProvider } from 'wagmi/providers/infura';
+import { publicProvider } from 'wagmi/providers/public';
+
+import { CoinbaseWalletConnector } from 'wagmi/connectors/coinbaseWallet';
+import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
+import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
 import { ToastContainer } from 'react-toastify';
 
-const chains = [mainnet, polygon];
-const projectId = '5fd254e3935b5aede91466b0037df4b9';
+// Configure chains & providers with the Alchemy provider.
+// Two popular providers are Alchemy (alchemy.com) and Infura (infura.io)
 
-const { publicClient } = configureChains(chains, [w3mProvider({ projectId })]);
-const wagmiConfig = createConfig({
+// TODO: .env file
+const { chains, publicClient, webSocketPublicClient } = configureChains(
+  [mainnet, polygon, bsc],
+  [
+    infuraProvider({ apiKey: 'ac546be7d92f46f5bbd794a14f4fd707' }),
+    publicProvider(),
+  ]
+);
+
+// Set up wagmi config
+const config = createConfig({
   autoConnect: true,
-  connectors: w3mConnectors({ projectId, chains }),
+  connectors: [
+    new MetaMaskConnector({ chains }),
+    new CoinbaseWalletConnector({
+      chains,
+      options: {
+        appName: 'wagmi',
+      },
+    }),
+    new WalletConnectConnector({
+      chains,
+      options: {
+        projectId: '5fd254e3935b5aede91466b0037df4b9',
+      },
+    }),
+  ],
   publicClient,
+  webSocketPublicClient,
 });
-const ethereumClient = new EthereumClient(wagmiConfig, chains);
 
 function App() {
   const islg = useMediaQuery(MediaQueryBreakpointEnum.xl);
@@ -79,9 +98,9 @@ function App() {
 
   return (
     <>
-      <WagmiConfig config={wagmiConfig}>
+      <WagmiConfig config={config}>
         <div
-          className={clsx('')}
+          className={clsx('overflow-x-clip')}
           style={{ paddingLeft: ismd ? sidebarWidth : 0 }}
         >
           <AppHeader {...contentProps} />
@@ -95,7 +114,7 @@ function App() {
           <AppSideBar {...contentProps} />
         </div>
       </WagmiConfig>
-      <Web3Modal projectId={projectId} ethereumClient={ethereumClient} />
+
       <ToastContainer position="bottom-right" theme="dark" />
     </>
   );
