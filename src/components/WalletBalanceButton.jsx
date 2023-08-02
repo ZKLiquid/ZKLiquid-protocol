@@ -8,18 +8,16 @@ import clsx from 'clsx';
 function WalletBalanceButton({ width }) {
   const [isOpenBalanceModal, setIsOpenBalanceModal] = useState(false);
 
-  const { address, connector, isConnected } = useAccount();
+  const { address } = useAccount();
 
-  const { data, isError, isLoading } = useBalance({
-    address,
-  });
+  const { data } = useBalance({ address });
 
   return (
     <>
       <button
         onClick={() => setIsOpenBalanceModal(true)}
         className={clsx(
-          'flex gap-2 items-center bg-[#1A1C22] py-2 px-4 rounded-full text-sm font-medium',
+          'flex gap-2 items-center p-1 pr-3 rounded-full text-sm font-medium border border-dark-300 transition-colors bg-dark-400 hover:bg-dark-300',
           width === 'full' && 'w-full'
         )}
       >

@@ -3,6 +3,7 @@ import { Menu, Transition } from '@headlessui/react';
 import { useNetwork, useSwitchNetwork } from 'wagmi';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
+import { ArrowDown2 } from 'iconsax-react';
 
 function SwitchNetworkDropdown({ width }) {
   const { chain } = useNetwork();
@@ -21,19 +22,25 @@ function SwitchNetworkDropdown({ width }) {
         <>
           <Menu.Button
             className={clsx(
-              'flex gap-2 items-center bg-[#1A1C22] py-2 px-4 rounded-full text-sm font-medium',
-              width === 'full' && 'w-full'
+              'flex gap-2 items-center p-1 pr-2.5 rounded-full text-sm font-medium border border-dark-300 transition-colors hover:bg-dark-300',
+              width === 'full' && 'w-full',
+              open ? 'bg-dark-300' : 'bg-dark-400'
             )}
           >
-            <img
-              className="w-6 h-6"
-              src={`./cryptoIcons/${chain.network}.svg`}
-              alt=""
-            />
-            {chain.name}
-            <ChevronDownIcon
+            <div className="bg-[#101115] p-1 rounded-full">
+              <img
+                className="w-6 h-6"
+                src={`/cryptoIcons/${chain.network}.svg`}
+                alt=""
+              />
+            </div>
+
+            <span className="lg:hidden xl:inline">{chain.name}</span>
+            <ArrowDown2
+              size="16"
+              color="#fff"
               className={clsx(
-                'w-4 h-4 text-white transition-transform will-change-transform ml-auto',
+                'transition-transform will-change-transform ml-auto',
                 open && 'rotate-180'
               )}
             />
@@ -47,21 +54,20 @@ function SwitchNetworkDropdown({ width }) {
             leaveFrom="transform scale-100 opacity-100"
             leaveTo="transform scale-95 opacity-0"
           >
-            <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-[#1A1C22] shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
+            <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-dark-400 border border-dark-300 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
               {chains.map((x) => (
                 <Menu.Item key={x.id}>
                   <button
                     disabled={!switchNetwork || x.id === chain?.id}
                     onClick={() => switchNetwork?.(x.id)}
                     className={clsx(
-                      'px-4 py-2 text-sm transition-colors flex items-center gap-2 w-full text-left hover:bg-[#292D33]',
-                      !switchNetwork ||
-                        (x.id === chain?.id && 'opacity-50 cursor-not-allowed')
+                      'px-4 py-2 text-sm transition-colors flex items-center gap-2 w-full text-left hover:bg-dark-300',
+                      !switchNetwork || (x.id === chain?.id && '!hidden')
                     )}
                   >
                     <img
                       className="w-6 h-6"
-                      src={`./cryptoIcons/${x.network}.svg`}
+                      src={`/cryptoIcons/${x.network}.svg`}
                       alt=""
                     />
                     {x.name}

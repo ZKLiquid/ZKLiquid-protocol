@@ -9,15 +9,10 @@ import { toast } from 'react-toastify';
 
 import Modal from '../common/Modal';
 
-import {
-  ChevronRightIcon,
-  ChevronDownIcon,
-  ArrowLeftOnRectangleIcon,
-  ClipboardDocumentListIcon,
-} from '@heroicons/react/24/outline';
+import { ArrowDown2, ArrowRight2, Copy, LogoutCurve } from 'iconsax-react';
 
 function WalletButton({ width }) {
-  const { address, connector, isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
 
   const [isOpenWalletModal, setIsOpenWalletModal] = useState(false);
   const { connect, connectors, error, isLoading, pendingConnector } =
@@ -28,6 +23,7 @@ function WalletButton({ width }) {
       },
     });
   const { disconnect } = useDisconnect();
+
   const disconnectHandler = () => {
     disconnect();
     toast.success('Disconnected.');
@@ -55,15 +51,18 @@ function WalletButton({ width }) {
           <>
             <Menu.Button
               className={clsx(
-                'flex gap-2 items-center bg-[#1A1C22] py-2 px-4 rounded-full text-sm font-medium',
-                width === 'full' && 'w-full'
+                'flex gap-2 items-center p-1 pr-2.5 rounded-full text-sm font-medium border border-dark-300 transition-colors hover:bg-dark-300',
+                width === 'full' && 'w-full',
+                open ? 'bg-dark-300' : 'bg-dark-400'
               )}
             >
               <COinsSvg className="flex-shrink-0 w-8 h-8" />
               {address.slice(0, 5)}... {address.slice(-4)}
-              <ChevronDownIcon
+              <ArrowDown2
+                size="16"
+                color="#fff"
                 className={clsx(
-                  'w-4 h-4 text-white transition-transform will-change-transform ml-auto',
+                  'transition-transform will-change-transform ml-auto',
                   open && 'rotate-180'
                 )}
               />
@@ -77,22 +76,22 @@ function WalletButton({ width }) {
               leaveFrom="transform scale-100 opacity-100"
               leaveTo="transform scale-95 opacity-0"
             >
-              <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-[#1A1C22] shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
+              <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-dark-400 border border-dark-300 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
                 <Menu.Item>
                   <button
-                    className="px-4 py-2 text-sm transition-colors flex items-center gap-2 w-full text-left hover:bg-[#292D33]"
+                    className="px-4 py-2 text-sm transition-colors flex items-center gap-2 w-full text-left hover:bg-dark-300"
                     onClick={disconnectHandler}
                   >
-                    <ArrowLeftOnRectangleIcon className="w-4 h-4 inline-block" />
+                    <LogoutCurve size="16" color="#fff" />
                     Disconnect
                   </button>
                 </Menu.Item>
                 <Menu.Item>
                   <button
-                    className="px-4 py-2 text-sm transition-colors flex items-center gap-2 w-full text-left hover:bg-[#292D33]"
+                    className="px-4 py-2 text-sm transition-colors flex items-center gap-2 w-full text-left hover:bg-dark-300"
                     onClick={copyAddress}
                   >
-                    <ClipboardDocumentListIcon className="w-4 h-4 inline-block" />
+                    <Copy size="16" color="#fff" />
                     Copy Address
                   </button>
                 </Menu.Item>
@@ -139,7 +138,7 @@ function WalletButton({ width }) {
                 connector.id === pendingConnector?.id &&
                 ' (connecting)'}
 
-              <ChevronRightIcon className="ml-auto w-5 h-5" />
+              <ArrowRight2 size="20" className="ml-auto" />
             </button>
           ))}
         </div>

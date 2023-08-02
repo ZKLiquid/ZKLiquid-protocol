@@ -1,21 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  scroll-behavior: smooth;
-  background: #101115;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  height: 100%;
-  @apply font-Inter;
-}
-
 @layer base {
   .heading-primary {
-    @apply font-extrabold font-Poppins md:text-[28px] text-[20px] leading-[1.21] md:leading-[1.15];
+    @apply font-bold text-3xl text-white;
+  }
+
+  body {
+    @apply text-white font-normal antialiased font-sans min-w-[375px];
   }
 }
 
