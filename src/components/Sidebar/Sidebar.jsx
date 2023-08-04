@@ -38,7 +38,7 @@ function Sidebar({ links }) {
         initial={false}
         animate={isOpen ? 'open' : 'closed'}
         variants={sidebarVariants}
-        className={`bg-dark-400 w-64 h-app fixed z-30 left-0 top-0 md:!translate-x-0 md:transition-all xl:w-64 ${
+        className={`bg-dark-500 w-64 h-app fixed z-30 left-0 top-0 md:!translate-x-0 md:transition-all xl:w-64 ${
           isOpen ? 'md:w-64' : 'md:w-20'
         }`}
       >
@@ -49,7 +49,7 @@ function Sidebar({ links }) {
           <XMarkIcon className="w-6 h-6 text-white" />
         </button>
 
-        <div className="bg-dark-400 w-full h-full overflow-y-auto overflow-x-clip border-r border-dark-300">
+        <div className="w-full h-full overflow-y-auto overflow-x-clip border-r border-dark-300">
           <Link
             to="/"
             className="py-5 px-4 flex gap-1 w-full border-b border-dark-300"

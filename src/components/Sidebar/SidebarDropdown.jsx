@@ -25,7 +25,7 @@ function SidebarDropdown({ link }) {
   return (
     <div
       className={`transition-colors ${
-        isDropdownOpen || hasActiveChildLink ? 'bg-dark-300' : 'bg-transparent'
+        isDropdownOpen || hasActiveChildLink ? 'bg-dark-400' : 'bg-transparent'
       }`}
     >
       <button

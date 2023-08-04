@@ -29,7 +29,7 @@ function DashboardLayout() {
 
   return (
     <SidebarContextProvider>
-      <div className="flex bg-dark-500 min-h-app ">
+      <div className="flex bg-black min-h-app ">
         <Sidebar sidebarOpen={sidebarOpen} links={links[page]} />
         <Header
           onOpenSidebar={() => setSidebarOpen(true)}

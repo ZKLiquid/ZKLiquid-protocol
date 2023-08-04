@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import clsx from 'clsx';
+import { useState } from 'react';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 
 import { Fragment } from 'react';
 import { Menu, Transition } from '@headlessui/react';
-import { ReactComponent as COinsSvg } from '../assets/svg/coins.svg';
+import CoinSVG from '@/assets/svg/coins.svg';
 import { toast } from 'react-toastify';
 
 import Modal from '../common/Modal';
@@ -22,6 +22,7 @@ function WalletButton({ width }) {
         setIsOpenWalletModal(false);
       },
     });
+
   const { disconnect } = useDisconnect();
 
   const disconnectHandler = () => {
@@ -56,7 +57,7 @@ function WalletButton({ width }) {
                 open ? 'bg-dark-300' : 'bg-dark-400'
               )}
             >
-              <COinsSvg className="flex-shrink-0 w-8 h-8" />
+              <img src={CoinSVG} className="flex-shrink-0 w-8 h-8" alt="" />
               {address.slice(0, 5)}... {address.slice(-4)}
               <ArrowDown2
                 size="16"

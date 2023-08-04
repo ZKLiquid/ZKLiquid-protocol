@@ -9,6 +9,7 @@ export default {
         gradient_custom:
           'linear-gradient(180deg, rgba(51, 237, 141, 0.2) 0%, rgba(9, 189, 187, 0.2) 100%)',
         main: 'linear-gradient(133.34deg,#fd371f -34.27%,#ff844b 99.35%)',
+        'gradient-dark': 'linear-gradient(96.34deg,#141217,#0e0c12);',
       },
       colors: {
         dark: {

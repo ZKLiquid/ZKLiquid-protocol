@@ -3,6 +3,11 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --toastify-color-dark: #141217;
+    --toastify-icon-color-success: #22c55e;
+    --toastify-font-family: inherit;
+  }
   .heading-primary {
     @apply font-bold text-3xl text-white;
   }
@@ -10,6 +15,10 @@
   body {
     @apply text-white font-normal antialiased font-sans min-w-[375px];
   }
+}
+
+.Toastify__toast {
+  padding: 12px;
 }
 
 /* For Webkit-based browsers (Chrome, Safari and Opera) */

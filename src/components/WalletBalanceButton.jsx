@@ -1,9 +1,10 @@
+import clsx from 'clsx';
 import { useState } from 'react';
 import { ReactComponent as WalletSvg } from '../assets/svg/wallet-balance.svg';
+import walletImg from '@/assets/svg/wallet-balance.svg';
 import ModalRight from '../common/ModalRight';
 
 import { useAccount, useBalance } from 'wagmi';
-import clsx from 'clsx';
 
 function WalletBalanceButton({ width }) {
   const [isOpenBalanceModal, setIsOpenBalanceModal] = useState(false);
@@ -21,7 +22,7 @@ function WalletBalanceButton({ width }) {
           width === 'full' && 'w-full'
         )}
       >
-        <WalletSvg />
+        <img src={walletImg} className="flex-shrink-0 w-8 h-8" alt="" />
         Wallet Balance
       </button>
 
