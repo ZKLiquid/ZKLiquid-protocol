@@ -21,6 +21,8 @@ function DashboardLayout() {
 
     // set the current page
     setCurrentPageLinks(currentLinks);
+
+    console.log(currentPageLinks);
   }, [location]);
 
   return (
