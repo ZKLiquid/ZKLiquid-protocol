@@ -29,7 +29,7 @@ const sidebarVariants = {
   },
 };
 
-function Sidebar({ links }) {
+function Sidebar({ currentPageLinks }) {
   const { isOpen, setIsOpen } = useContext(SidebarContext);
 
   return (
@@ -72,11 +72,11 @@ function Sidebar({ links }) {
           </Link>
 
           <div className="space-y-2.5 mt-3">
-            {links.map((link, idx) =>
+            {currentPageLinks.links.map((link) =>
               link.hasOwnProperty('children') ? (
-                <SidebarDropdown link={link} key={idx} />
+                <SidebarDropdown link={link} key={link.title} />
               ) : (
-                <SidebarLink link={link} key={idx} />
+                <SidebarLink link={link} key={link.title} />
               )
             )}
           </div>

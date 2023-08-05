@@ -15,11 +15,18 @@ import MyLoans from './pages/defi/MyLoans';
 import Gamefi from './pages/gamefi/Gamefi';
 import NFT from './pages/nft/NFT';
 
+import Trade from './pages/swap/Trade';
+import Bridge from './pages/swap/Bridge';
+
 const router = createBrowserRouter(
   createRoutesFromElements(
     <>
       <Route exact path="/" element={<Home />} errorElement={<ErrorPage />} />
       <Route path="/" element={<DashboardLayout />}>
+        <Route path="/swap">
+          <Route index element={<Trade />} />
+          <Route path="bridge" element={<Bridge />} />
+        </Route>
         <Route path="/defi">
           <Route index element={<Dashboard />} />
           <Route path="lend" element={<Lend />} />

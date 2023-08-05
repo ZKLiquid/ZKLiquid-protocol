@@ -14,7 +14,9 @@ import WalletBalanceButton from './WalletBalanceButton';
 import SwitchNetworkDropdown from './SwitchNetworkDropdown';
 import { AnimatePresence, motion } from 'framer-motion';
 
-function Header({ links }) {
+import sidebarLinks from '../constant/sidebarLinks';
+
+function Header() {
   const { isOpen, setIsOpen } = useContext(SidebarContext);
   const [isMobilePopupOpen, setIsMobilePopupOpen] = useState(false);
   const { isConnected } = useAccount();
@@ -54,17 +56,19 @@ function Header({ links }) {
           </button>
 
           <div className="flex gap-2.5">
-            {links.map((link) => (
+            {sidebarLinks.map((link) => (
               <NavLink
                 className={({ isActive }) => {
                   const navClasses =
                     'py-1.5 px-5 inline-block rounded-md transition-colors hover:bg-dark-400';
                   return isActive ? `!bg-[#2769E4] ${navClasses}` : navClasses;
                 }}
-                key={link}
-                to={`/${link}`}
+                key={link.path}
+                to={link.path}
               >
-                <span className="capitalize text-sm font-semibold">{link}</span>
+                <span className="capitalize text-sm font-semibold">
+                  {link.title}
+                </span>
               </NavLink>
             ))}
           </div>

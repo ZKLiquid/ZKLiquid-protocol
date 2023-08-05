@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-import navIcons from '@/assets/images/navIcons/icons.svg';
 import SidebarLink from './Sidebarlink';
 import clsx from 'clsx';
 import { SidebarContext } from '../../context/SidebarContext';
@@ -32,14 +31,12 @@ function SidebarDropdown({ link }) {
         className={`flex items-center gap-2 py-3 px-4 w-full text-dark-100 hover:text-white transition-colors font-medium`}
         onClick={() => setIsDropdownOpen((prev) => !prev)}
       >
-        <svg
-          className={clsx(
-            'w-6 h-6 transition-all flex-shrink-0',
-            isOpen ? 'ml-0' : 'ml-3 xl:ml-0'
-          )}
+        <span
+          style={{ transition: 'margin .2s ease' }}
+          className={clsx(isOpen ? 'ml-0' : 'ml-3 xl:ml-0')}
         >
-          <use xlinkHref={navIcons + link.icon}></use>
-        </svg>
+          {link.icon}
+        </span>
         <span
           className={clsx(
             'transition-opacity whitespace-nowrap',

@@ -1,5 +1,4 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import navIcons from '@/assets/images/navIcons/icons.svg';
 import { SidebarContext } from '../../context/SidebarContext';
 import clsx from 'clsx';
 import { useContext } from 'react';
@@ -17,15 +16,16 @@ function SidebarLink({ link }) {
         active ? 'text-white bg-dark-300' : 'text-dark-100'
       }`}
     >
-      <svg
+      <span
+        style={{ transition: 'margin .2s ease' }}
         className={clsx(
-          'w-6 h-6 transition-all flex-shrink-0',
           active && 'text-primary',
           isOpen ? 'ml-0' : 'ml-3 xl:ml-0'
         )}
       >
-        <use xlinkHref={navIcons + link.icon}></use>
-      </svg>
+        {link.icon}
+      </span>
+
       <span
         className={clsx(
           'transition-opacity whitespace-nowrap',

@@ -6,7 +6,7 @@ function Home() {
 
   useEffect(() => {
     console.log('Redirecting to the defi page...');
-    navigate('/defi');
+    navigate('/swap');
   }, []);
 
   return <div>Home page</div>;
