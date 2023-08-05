@@ -14,7 +14,7 @@ import WalletBalanceButton from './WalletBalanceButton';
 import SwitchNetworkDropdown from './SwitchNetworkDropdown';
 import { AnimatePresence, motion } from 'framer-motion';
 
-import sidebarLinks from '../constant/sidebarLinks';
+import sidebarLinks from '../constant/sidebarLinks.jsx';
 
 function Header() {
   const { isOpen, setIsOpen } = useContext(SidebarContext);

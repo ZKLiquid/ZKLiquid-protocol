@@ -12,7 +12,6 @@ function DashboardLayout() {
 
   // Set the default page (swap)
   const [currentPageLinks, setCurrentPageLinks] = useState(sidebarLinks[0]);
-  console.log('Dashboard:', sidebarLinks);
 
   useEffect(() => {
     const currentPath = '/' + location.pathname.split('/')[1];
