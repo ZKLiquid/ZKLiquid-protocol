@@ -35,7 +35,7 @@ function DashboardLayout() {
           onOpenSidebar={() => setSidebarOpen(true)}
           links={Object.keys(links)}
         />
-        <div className="px-4 py-6 xl:px-8 mt-12 lg:mt-[66px] md:ml-20 xl:ml-64 w-full">
+        <div className="px-4 py-6 xl:px-8 mt-12 lg:mt-[66px] md:pl-24 xl:pl-72 w-full">
           <Outlet />
         </div>
       </div>

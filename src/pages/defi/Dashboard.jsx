@@ -318,8 +318,8 @@ function Dashboard() {
               </div>
             </div>
 
-            <div className="flex justify-between mt-12">
-              <div className="bg-[#252930] rounded-lg relative">
+            <div className="flex justify-between mt-12 gap-4">
+              <div className="bg-[#252930] rounded-lg relative w-full">
                 <div className="bg-[#171720] rounded-lg absolute -top-4 left-4 p-3">
                   <p className="leading-[16px] text-[12px] font-bold text-[#979797]">
                     Via Pancakeswap V3
@@ -333,7 +333,7 @@ function Dashboard() {
                 </div>
               </div>
 
-              <div className="bg-[#252930] rounded-lg relative">
+              <div className="bg-[#252930] rounded-lg relative w-full">
                 <div className="bg-[#171720] rounded-lg absolute -top-4 left-4 p-3">
                   <p className="leading-[16px] text-[12px] font-bold text-[#979797]">
                     Via Uniswap V2
@@ -494,7 +494,7 @@ function Dashboard() {
             </div>
 
             <div className="flex justify-between mt-12 gap-2">
-              <div className="bg-[#252930] rounded-lg relative">
+              <div className="bg-[#252930] rounded-lg relative w-full">
                 <div className="bg-[#171720] rounded-lg absolute -top-4 left-4 p-3">
                   <p className="leading-[16px] text-[12px] font-bold text-[#979797]">
                     Via Pancakeswap V3
@@ -508,7 +508,7 @@ function Dashboard() {
                 </div>
               </div>
 
-              <div className="bg-[#252930] rounded-lg relative">
+              <div className="bg-[#252930] rounded-lg relative w-full">
                 <div className="bg-[#171720] rounded-lg absolute -top-4 left-4 p-3">
                   <p className="leading-[16px] text-[12px] font-bold text-[#979797]">
                     Via Uniswap V2
@@ -545,7 +545,7 @@ function Dashboard() {
           {bridge.map(({ icon, name, price, id }, index) => (
             <div
               key={index}
-              className="flex items-center w-full min-w-[272px] gap-3 bg-dark-400 rounded-xl p-3"
+              className="inline-flex items-center w-full min-w-[272px] gap-3 bg-dark-400 rounded-xl p-3"
             >
               <img src={icon} alt="" />
               <div>
