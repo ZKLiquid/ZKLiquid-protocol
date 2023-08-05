@@ -31,12 +31,12 @@ function SidebarDropdown({ link }) {
         className={`flex items-center gap-2 py-3 px-4 w-full text-dark-100 hover:text-white transition-colors font-medium`}
         onClick={() => setIsDropdownOpen((prev) => !prev)}
       >
-        {/* <span
+        <span
           style={{ transition: 'margin .2s ease' }}
           className={clsx(isOpen ? 'ml-0' : 'ml-3 xl:ml-0')}
         >
           {link.icon}
-        </span> */}
+        </span>
         <span
           className={clsx(
             'transition-opacity whitespace-nowrap',

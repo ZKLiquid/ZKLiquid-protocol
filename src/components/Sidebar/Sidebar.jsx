@@ -30,6 +30,8 @@ const sidebarVariants = {
 };
 
 function Sidebar({ currentPageLinks }) {
+  console.log(currentPageLinks);
+
   const { isOpen, setIsOpen } = useContext(SidebarContext);
 
   return (
