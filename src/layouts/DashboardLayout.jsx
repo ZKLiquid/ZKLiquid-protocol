@@ -4,7 +4,7 @@ import { Outlet, useLocation, useMatch } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 
 import Header from '../components/Header';
-import sidebarLinks from '../constant/sidebarLinks';
+import sidebarLinks from '../constant/sidebarLinks.jsx';
 import { SidebarContextProvider } from '../context/SidebarContext';
 
 function DashboardLayout() {
