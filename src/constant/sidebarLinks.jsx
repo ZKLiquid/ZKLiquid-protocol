@@ -17,12 +17,12 @@ export default [
     links: [
       {
         title: 'Trade',
-        icon: <Repeat />,
+        // icon: <Repeat />,
         path: '/swap',
       },
       {
         title: 'Bridge Liquidity',
-        icon: <Bubble />,
+        // icon: <Bubble />,
         path: '/swap/bridge',
       },
     ],
@@ -33,37 +33,37 @@ export default [
     links: [
       {
         title: 'Dashboard',
-        icon: <Home2 />,
+        // icon: <Home2 />,
         path: '/defi',
       },
       {
         title: 'SynLend',
-        icon: <BitcoinRefresh />,
+        // icon: <BitcoinRefresh />,
         children: [
           {
             title: 'Lend',
-            icon: <PercentageCircle />,
+            // icon: <PercentageCircle />,
             path: '/defi/lend',
           },
           {
             title: 'My Loans',
-            icon: <EmptyWalletAdd />,
+            // icon: <EmptyWalletAdd />,
             path: '/defi/loans',
           },
         ],
       },
       {
         title: 'SynMarg',
-        icon: <Activity />,
+        // icon: <Activity />,
         children: [
           {
             title: 'MTrade',
-            icon: <Activity />,
+            // icon: <Activity />,
             path: '/defi/mtrade',
           },
           {
             title: 'MAbitrage',
-            icon: <Activity />,
+            // icon: <Activity />,
             path: '/defi/mabitrage',
           },
         ],
@@ -76,7 +76,7 @@ export default [
     links: [
       {
         title: 'GameFi link',
-        icon: <Game />,
+        // icon: <Game />,
         path: '/gamefi',
       },
     ],
@@ -87,7 +87,7 @@ export default [
     links: [
       {
         title: 'Nft link',
-        icon: <Image />,
+        // icon: <Image />,
         path: '/nft',
       },
     ],

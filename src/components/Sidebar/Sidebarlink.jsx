@@ -16,7 +16,7 @@ function SidebarLink({ link }) {
         active ? 'text-white bg-dark-300' : 'text-dark-100'
       }`}
     >
-      <span
+      {/* <span
         style={{ transition: 'margin .2s ease' }}
         className={clsx(
           active && 'text-primary',
@@ -24,7 +24,7 @@ function SidebarLink({ link }) {
         )}
       >
         {link.icon}
-      </span>
+      </span> */}
 
       <span
         className={clsx(
