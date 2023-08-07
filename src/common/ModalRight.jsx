@@ -32,7 +32,7 @@ function ModalRight({ open, onClose, heading, children }) {
               <Dialog.Panel className="relative transform overflow-hidden  bg-dark-400 px-4 pb-4 pt-5 text-left shadow-xl transition-all w-full max-w-xs sm:max-w-sm sm:p-6 text-dark-50">
                 {heading && (
                   <div className="border-b border-dark-300 pb-5">
-                    <h3 className="text-xl font-medium">{heading}</h3>
+                    <h3 className="text-lg font-medium">{heading}</h3>
                   </div>
                 )}
                 <button

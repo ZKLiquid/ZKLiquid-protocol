@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
@@ -32,7 +32,7 @@ function Modal({ open, onClose, heading, children }) {
               <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-dark-400 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md sm:p-6 text-dark-50">
                 {heading && (
                   <div className="border-b border-dark-300 pb-5">
-                    <h3 className="text-xl font-medium">{heading}</h3>
+                    <h3 className="text-lg font-medium">{heading}</h3>
                   </div>
                 )}
                 <button
