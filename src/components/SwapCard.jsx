@@ -9,6 +9,7 @@ import { useBalance, useNetwork } from 'wagmi';
 import Modal from '../common/Modal';
 import clsx from 'clsx';
 import { RadioGroup } from '@headlessui/react';
+import axios from 'axios';
 
 const chainAlliases = {
   1: 'ethereum',
@@ -25,9 +26,7 @@ function SwapCard() {
 
   const { chain } = useNetwork();
 
-  const tokensURL = `https://v001.wallet.syntrum.com/wallet/swapAssets/${
-    chainAlliases[chain.id]
-  }`;
+  const [currentChain, setCurrentChain] = useState(chainAlliases[1]);
 
   const [tokens, setTokens] = useState(null);
 
@@ -45,17 +44,20 @@ function SwapCard() {
   const [gasPrice, setGasPrice] = useState(54.197206281);
 
   useEffect(() => {
-    const fetchData = async () => {
-      fetch(tokensURL)
-        .then((res) => res.json())
-        .then((data) => {
-          setTokens(data);
-          setTokenOne(data[1]);
-          setTokenTwo(data[2]);
-        });
-    };
+    if (chain) {
+      setCurrentChain(chainAlliases[chain.id]);
+    }
 
-    fetchData();
+    axios
+      .get(`https://v001.wallet.syntrum.com/wallet/swapAssets/${currentChain}`)
+      .then((res) => {
+        setTokens(res.data);
+        setTokenOne(res.data[1]);
+        setTokenTwo(res.data[2]);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }, [chain]);
 
   // const { data, isError, isLoading } = useBalance({
@@ -125,13 +127,11 @@ function SwapCard() {
               {tokens && (
                 <img
                   className="flex-shrink-0 rounded-full overflow-hidden w-6 h-6 mr-2"
-                  src={`https://v001.wallet.syntrum.com/images/${
-                    chainAlliases[chain.id]
-                  }/contract/${tokenOne.tokenData.tokenAddress}/32/icon.png`}
+                  src={`https://v001.wallet.syntrum.com/images/${currentChain}/contract/${tokenOne?.tokenData.tokenAddress}/32/icon.png`}
                   alt=""
                 />
               )}
-              {tokens && tokenOne.tokenData.name}
+              {tokenOne?.tokenData.name}
               <ArrowDown2
                 size="16"
                 className="flex-shrink-0 -mr-1 text-white"
@@ -175,13 +175,11 @@ function SwapCard() {
               {tokens && (
                 <img
                   className="flex-shrink-0 rounded-full overflow-hidden w-6 h-6 mr-2"
-                  src={`https://v001.wallet.syntrum.com/images/${
-                    chainAlliases[chain.id]
-                  }/contract/${tokenTwo.tokenData.tokenAddress}/32/icon.png`}
+                  src={`https://v001.wallet.syntrum.com/images/${currentChain}/contract/${tokenTwo?.tokenData.tokenAddress}/32/icon.png`}
                   alt=""
                 />
               )}
-              {tokens && tokenTwo.tokenData.name}
+              {tokens && tokenTwo?.tokenData.name}
               <ArrowDown2
                 size="16"
                 className="flex-shrink-0 -mr-1 text-white"
@@ -265,9 +263,7 @@ function SwapCard() {
                   >
                     <img
                       className="rounded-full overflow-hidden w-6 h-6 mr-2"
-                      src={`https://v001.wallet.syntrum.com/images/${
-                        chainAlliases[chain.id]
-                      }/contract/${token.tokenData.tokenAddress}/32/icon.png`}
+                      src={`https://v001.wallet.syntrum.com/images/${currentChain}/contract/${token.tokenData.tokenAddress}/32/icon.png`}
                       alt=""
                     />
                     {token.tokenData.name}
