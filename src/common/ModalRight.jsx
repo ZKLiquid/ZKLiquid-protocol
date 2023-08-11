@@ -5,7 +5,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 function ModalRight({ open, onClose, heading, children }) {
   return (
     <Transition.Root show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={onClose}>
+      <Dialog as="div" className="relative z-30" onClose={onClose}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -18,7 +18,7 @@ function ModalRight({ open, onClose, heading, children }) {
           <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" />
         </Transition.Child>
 
-        <div className="fixed inset-0 z-10 overflow-y-auto">
+        <div className="fixed inset-0 z-30 overflow-y-auto">
           <div className="flex min-h-full justify-end text-center overflow-x-clip">
             <Transition.Child
               as={Fragment}

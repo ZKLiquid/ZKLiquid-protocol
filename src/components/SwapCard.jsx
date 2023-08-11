@@ -1,15 +1,17 @@
 import { useState, Fragment, useEffect } from 'react';
 import { ArrowDown2, Repeat, Setting4 } from 'iconsax-react';
 
-import { ReactComponent as MoreSvg } from '@/assets/svg/more.svg';
-
 import ModalRight from '../common/ModalRight';
-import { useBalance, useNetwork } from 'wagmi';
+import { useAccount, useNetwork, useSendTransaction, useToken } from 'wagmi';
 
 import Modal from '../common/Modal';
 import clsx from 'clsx';
 import { RadioGroup } from '@headlessui/react';
 import axios from 'axios';
+import Button from './Button';
+import { toast } from 'react-toastify';
+import { parseGwei } from 'viem';
+import { useDebounce } from 'usehooks-ts';
 
 const chainAlliases = {
   1: 'ethereum',
@@ -21,12 +23,17 @@ const toleranceOptions = [0.1, 0.5, 1, 1.5];
 const trxSpeedOptions = ['Default', 'Standard', 'Fast', 'Instant'];
 
 function SwapCard() {
+  const { address, isConnected } = useAccount();
+  const [selectedDEX, setSelectedDEX] = useState(null);
+  const [DEXs, setDEXs] = useState(null);
+  // const { data, isError, isLoading } = useToken({
+  //   address: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+  // });
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const { chain } = useNetwork();
-
-  const [currentChain, setCurrentChain] = useState(chainAlliases[1]);
 
   const [tokens, setTokens] = useState(null);
 
@@ -43,14 +50,19 @@ function SwapCard() {
 
   const [gasPrice, setGasPrice] = useState(54.197206281);
 
-  useEffect(() => {
-    if (chain) {
-      setCurrentChain(chainAlliases[chain.id]);
-    }
+  const debouncedValue = useDebounce(tokenOneAmount, 500);
 
+  const [isSwapLoading, setIsSwapLoading] = useState(false);
+
+  useEffect(() => {
     axios
-      .get(`https://v001.wallet.syntrum.com/wallet/swapAssets/${currentChain}`)
+      .get(
+        `https://v001.wallet.syntrum.com/wallet/swapAssets/${
+          chain ? chainAlliases[chain.id] : 'ethereum'
+        }`
+      )
       .then((res) => {
+        console.log(res.data);
         setTokens(res.data);
         setTokenOne(res.data[1]);
         setTokenTwo(res.data[2]);
@@ -91,6 +103,121 @@ function SwapCard() {
     setIsModalOpen(false);
   };
 
+  const getSwapData = () => {
+    let tokenOneProp = null;
+    let tokenTwoProp = null;
+
+    setIsSwapLoading(true);
+
+    if (tokenOne.type === 'coin') {
+      tokenOneProp = {
+        from: {
+          type: tokenOne.type,
+          amount: tokenOneAmount,
+        },
+      };
+    } else {
+      tokenOneProp = {
+        from: {
+          type: tokenOne.type,
+          amount: tokenOneAmount,
+          tokenData: {
+            tokenAddress: tokenOne.tokenData.tokenAddress,
+          },
+        },
+      };
+    }
+
+    if (tokenTwo.type === 'coin') {
+      tokenTwoProp = {
+        to: {
+          type: tokenTwo.type,
+        },
+      };
+    } else {
+      tokenTwoProp = {
+        to: {
+          type: tokenTwo.type,
+          tokenData: {
+            tokenAddress: tokenTwo.tokenData.tokenAddress,
+          },
+        },
+      };
+    }
+
+    axios
+      .post('https://v001.wallet.syntrum.com/wallet/getSwapData', {
+        platform: chain ? chainAlliases[chain.id] : 'ethereum',
+        address,
+        ...tokenOneProp,
+        ...tokenTwoProp,
+        advanced: {
+          gasPrice: '90.737087652',
+          slippageTolerance: 0.5,
+        },
+      })
+      .then(
+        (response) => {
+          console.log(response);
+          setDEXs(response.data);
+          setSelectedDEX(response.data[0]);
+          setTokenTwoAmount(response.data[0].toAmount);
+          setIsSwapLoading(false);
+        },
+        (error) => {
+          console.log(error);
+          setIsSwapLoading(false);
+        }
+      );
+  };
+
+  useEffect(() => {
+    setTokenTwoAmount(selectedDEX?.toAmount);
+  }, [selectedDEX]);
+
+  const swapHandler = () => {
+    if (!isConnected) return toast.error('Please connect your wallet');
+    if (!tokenOneAmount || tokenOneAmount <= 0)
+      return toast.error('Please enter valid amount');
+    getSwapData();
+  };
+
+  // const { data, sendTransaction } = useSendTransaction({
+  //   from: address,
+  //   to: selectedDEX?.serviceData.to,
+  //   data: selectedDEX?.serviceData.txData,
+  //   gasPrice: parseGwei('5'),
+  // });
+
+  const handleTrx = () => {
+    console.log('send trx');
+
+    console.log(selectedDEX);
+    // axios
+    //   .get(
+    //     `https://v001.wallet.syntrum.com/wallet/getSwapSettings/${
+    //       chain ? chainAlliases[chain.id] : 'ethereum'
+    //     }`
+    //   )
+    //   .then((res) => {
+    //     console.log(res.data);
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
+    // sendTransaction();
+  };
+
+  useEffect(() => {
+    // Do fetch here...
+    // Triggers when "debouncedValue" changes
+    if (isConnected) {
+      tokenOne && tokenOneAmount && getSwapData();
+    } else if (tokenOneAmount) {
+      toast.error('Please connect your wallet');
+    }
+  }, [debouncedValue]);
+
   return (
     <>
       <div className="bg-dark-400 p-4 md:p-6 rounded-xl">
@@ -120,24 +247,38 @@ function SwapCard() {
           </div>
 
           <div className="space-y-2 text-right flex-shrink-0">
-            <button
-              className="inline-flex items-center justify-center gap-x-1.5 rounded-lg bg-dark-300 px-3 py-2 text-sm font-semibold text-white shadow-sm  hover:bg-dark-300/50 whitespace-nowrap"
-              onClick={() => openModal(1)}
-            >
-              {tokens && (
-                <img
-                  className="flex-shrink-0 rounded-full overflow-hidden w-6 h-6 mr-2"
-                  src={`https://v001.wallet.syntrum.com/images/${currentChain}/contract/${tokenOne?.tokenData.tokenAddress}/32/icon.png`}
-                  alt=""
+            {tokens && (
+              <button
+                className="inline-flex items-center justify-center gap-x-1.5 rounded-lg bg-dark-300 px-3 py-2 text-sm font-semibold text-white shadow-sm  hover:bg-dark-300/50 whitespace-nowrap"
+                onClick={() => openModal(1)}
+              >
+                {tokenOne.type === 'coin' ? (
+                  <img
+                    className="flex-shrink-0 rounded-full overflow-hidden w-6 h-6 mr-2"
+                    src={`https://v001.wallet.syntrum.com/images/${tokenOne.platformId}/currency/24/icon.png`}
+                    alt=""
+                  />
+                ) : (
+                  <img
+                    className="flex-shrink-0 rounded-full overflow-hidden w-6 h-6 mr-2"
+                    src={`https://v001.wallet.syntrum.com/images/${
+                      chain ? chainAlliases[chain.id] : 'ethereum'
+                    }/contract/${tokenOne?.tokenData.tokenAddress}/24/icon.png`}
+                    alt=""
+                  />
+                )}
+                {tokenOne.type === 'coin' ? (
+                  <span className="uppercase">{tokenOne.platformId}</span>
+                ) : (
+                  <span>{tokenOne?.tokenData.name}</span>
+                )}
+                <ArrowDown2
+                  size="16"
+                  className="flex-shrink-0 -mr-1 text-white"
+                  aria-hidden="true"
                 />
-              )}
-              {tokenOne?.tokenData.name}
-              <ArrowDown2
-                size="16"
-                className="flex-shrink-0 -mr-1 text-white"
-                aria-hidden="true"
-              />
-            </button>
+              </button>
+            )}
             <p className="text-xs md:text-sm text-dark-100 font-medium">
               Your BTC balance: 0.6280
             </p>
@@ -156,43 +297,127 @@ function SwapCard() {
         <div className="mt-4 flex justify-between items-end">
           <div className="space-y-3 flex flex-col items-start">
             <p className="text-sm font-medium text-dark-100">To</p>
-            <input
+            <div
               type="number"
               className="bg-transparent text-xl md:text-3xl font-bold text-white border-0 outline-none placeholder:text-dark-200 w-full"
               placeholder="0.00"
               disabled={true}
-            />
+              value={tokenTwoAmount}
+            >
+              {tokenOneAmount ? (
+                <div>
+                  {tokenTwoAmount ? (
+                    tokenTwoAmount
+                  ) : (
+                    <span className="text-dark-200">0.00</span>
+                  )}
+                </div>
+              ) : (
+                <span className="text-dark-200">0.00</span>
+              )}
+            </div>
             <button className="text-xs md:text-sm text-dark-100 font-medium">
               $23,805.00
             </button>
           </div>
 
           <div className="space-y-2 text-right flex-shrink-0">
-            <button
-              className="inline-flex items-center justify-center gap-x-1.5 rounded-lg bg-dark-300 px-3 py-2 text-sm font-semibold text-white shadow-sm  hover:bg-dark-300/50 whitespace-nowrap"
-              onClick={() => openModal(2)}
-            >
-              {tokens && (
-                <img
-                  className="flex-shrink-0 rounded-full overflow-hidden w-6 h-6 mr-2"
-                  src={`https://v001.wallet.syntrum.com/images/${currentChain}/contract/${tokenTwo?.tokenData.tokenAddress}/32/icon.png`}
-                  alt=""
+            {tokens && (
+              <button
+                className="inline-flex items-center justify-center gap-x-1.5 rounded-lg bg-dark-300 px-3 py-2 text-sm font-semibold text-white shadow-sm  hover:bg-dark-300/50 whitespace-nowrap"
+                onClick={() => openModal(2)}
+              >
+                {tokenTwo?.type === 'coin' ? (
+                  <img
+                    className="flex-shrink-0 rounded-full overflow-hidden w-6 h-6 mr-2"
+                    src={`https://v001.wallet.syntrum.com/images/${tokenTwo.platformId}/currency/24/icon.png`}
+                    alt=""
+                  />
+                ) : (
+                  <img
+                    className="flex-shrink-0 rounded-full overflow-hidden w-6 h-6 mr-2"
+                    src={`https://v001.wallet.syntrum.com/images/${
+                      chain ? chainAlliases[chain.id] : 'ethereum'
+                    }/contract/${tokenTwo?.tokenData.tokenAddress}/24/icon.png`}
+                    alt=""
+                  />
+                )}
+                {tokenTwo.type === 'coin' ? (
+                  <span className="uppercase">{tokenOne.platformId}</span>
+                ) : (
+                  <span>{tokenTwo?.tokenData.name}</span>
+                )}
+                <ArrowDown2
+                  size="16"
+                  className="flex-shrink-0 -mr-1 text-white"
+                  aria-hidden="true"
                 />
-              )}
-              {tokens && tokenTwo?.tokenData.name}
-              <ArrowDown2
-                size="16"
-                className="flex-shrink-0 -mr-1 text-white"
-                aria-hidden="true"
-              />
-            </button>
+              </button>
+            )}
             <p className="text-xs md:text-sm text-dark-100 font-medium">
               1 BTC= 60030.6280
             </p>
           </div>
         </div>
 
-        <div className="bg-gradient-to-b from-[#33ed8d] to-[#09BDBB] rounded-lg relative mt-12 ">
+        {DEXs && !isSwapLoading && (
+          <div className="mt-12">
+            <RadioGroup value={selectedDEX} onChange={setSelectedDEX}>
+              <div className="grid lg:grid-cols-2 gap-x-4 gap-y-10">
+                {DEXs.map((dex, i) => (
+                  <RadioGroup.Option
+                    key={dex.name}
+                    value={dex}
+                    className={({ checked }) =>
+                      `
+                  ${
+                    checked
+                      ? 'bg-greenGradient text-black'
+                      : 'bg-dark-300 text-white'
+                  }
+                    relative flex cursor-pointer rounded-lg p-5 py-6 shadow-md focus:outline-none ${
+                      i === 0 ? 'lg:col-span-2' : ''
+                    }`
+                    }
+                  >
+                    {({ checked }) => (
+                      <>
+                        <div
+                          className={`absolute -top-6 left-2 p-2.5 px-3 rounded-lg ${
+                            checked
+                              ? 'bg-gradient-light'
+                              : 'bg-dark-400 border border-dark-300'
+                          }`}
+                        >
+                          <span className="text-sm font-bold ">
+                            Via {dex.name}
+                          </span>
+                        </div>
+
+                        <div
+                          className={`flex w-full  justify-between ${
+                            i !== 0
+                              ? 'flex-col '
+                              : 'lg:items-center flex-col md:flex-row'
+                          }`}
+                        >
+                          <p className={`text-xl font-medium`}>
+                            {dex.toAmount}
+                          </p>
+                          <p className="text-sm font-medium">
+                            Est fee: {dex.feeAmount}
+                          </p>
+                        </div>
+                      </>
+                    )}
+                  </RadioGroup.Option>
+                ))}
+              </div>
+            </RadioGroup>
+          </div>
+        )}
+
+        {/* <div className="bg-gradient-to-b from-[#33ed8d] to-[#09BDBB] rounded-lg relative mt-12 ">
           <div className="bg-gradient-to-b from-[#11C6B3] to-[#7A6CAC] rounded-lg absolute -top-4 left-4 p-3">
             <p className="text-[14px] text-bold leading-[16px] text-[#000]">
               Via Uniswap V3
@@ -235,15 +460,36 @@ function SwapCard() {
               </p>
             </div>
           </div>
-        </div>
+        </div> */}
 
-        <p className="flex cursor-pointer items-center gap-3 justify-center pt-8 text-[#33ED8D] text-[16px] font-medium">
-          View More DEXs <MoreSvg />
-        </p>
+        {isSwapLoading && (
+          <div className="py-8 flex justify-center">
+            <svg
+              className="animate-spin -ml-1 mr-3 h-9 w-9 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+          </div>
+        )}
 
-        <button className="text-[16px] bg-gradient-to-r from-[#DC40A4] to-[#6749D5] w-full rounded-lg mt-6 py-3">
+        <Button onClick={handleTrx} className="mt-6">
           Approve
-        </button>
+        </Button>
       </div>
 
       <ModalRight
@@ -253,22 +499,36 @@ function SwapCard() {
       >
         <div className="space-y-1 -ml-2 font-medium">
           {tokens &&
-            tokens.map(
-              (token, i) =>
-                token.type === 'token' && (
-                  <button
-                    key={token.tokenData.name}
-                    className="flex items-center w-full p-2 rounded-lg  transition-colors hover:bg-dark-300"
-                    onClick={() => modifyToken(i)}
-                  >
-                    <img
-                      className="rounded-full overflow-hidden w-6 h-6 mr-2"
-                      src={`https://v001.wallet.syntrum.com/images/${currentChain}/contract/${token.tokenData.tokenAddress}/32/icon.png`}
-                      alt=""
-                    />
-                    {token.tokenData.name}
-                  </button>
-                )
+            tokens.map((token, i) =>
+              token.type === 'coin' ? (
+                <button
+                  key={token.platformId}
+                  className="flex items-center w-full p-2 rounded-lg  transition-colors hover:bg-dark-300"
+                  onClick={() => modifyToken(i)}
+                >
+                  <img
+                    className="rounded-full overflow-hidden w-6 h-6 mr-2"
+                    src={`https://v001.wallet.syntrum.com/images/${token.platformId}/currency/24/icon.png`}
+                    alt=""
+                  />
+                  {token.platformId}
+                </button>
+              ) : (
+                <button
+                  key={token.tokenData.name}
+                  className="flex items-center w-full p-2 rounded-lg  transition-colors hover:bg-dark-300"
+                  onClick={() => modifyToken(i)}
+                >
+                  <img
+                    className="rounded-full overflow-hidden w-6 h-6 mr-2"
+                    src={`https://v001.wallet.syntrum.com/images/${
+                      chain ? chainAlliases[chain.id] : 'ethereum'
+                    }/contract/${token.tokenData.tokenAddress}/24/icon.png`}
+                    alt=""
+                  />
+                  {token.tokenData.name}
+                </button>
+              )
             )}
         </div>
       </ModalRight>

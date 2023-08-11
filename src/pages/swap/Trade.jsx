@@ -7,7 +7,11 @@ import SwapCard from '../../components/SwapCard';
 import TopTokensList from '../../components/TopTokensList';
 import { Tab } from '@headlessui/react';
 
+import { useMediaQuery } from 'usehooks-ts';
+
 function Trade() {
+  const isMd = useMediaQuery('(min-width: 768px)');
+
   return (
     <>
       <div className="text-white">
@@ -91,7 +95,12 @@ function Trade() {
           </div>
         </div>
 
-        <div className="lg:hidden">
+        {isMd ? (
+          <div className="grid grid-cols-2 gap-6 items-start">
+            <TopTokensList />
+            <SwapCard />
+          </div>
+        ) : (
           <Tab.Group>
             <Tab.List className="flex gap-3">
               <Tab
@@ -126,12 +135,7 @@ function Trade() {
               </Tab.Panel>
             </Tab.Panels>
           </Tab.Group>
-        </div>
-
-        <div className="lg:grid grid-cols-2 gap-6 hidden">
-          <TopTokensList />
-          <SwapCard />
-        </div>
+        )}
 
         <NewsLetter />
       </div>

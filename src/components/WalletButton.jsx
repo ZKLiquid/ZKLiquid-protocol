@@ -12,7 +12,7 @@ import Modal from '../common/Modal';
 import { ArrowDown2, ArrowRight2, Copy, LogoutCurve } from 'iconsax-react';
 
 function WalletButton({ width }) {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, connector } = useAccount();
 
   const [isOpenWalletModal, setIsOpenWalletModal] = useState(false);
   const { connect, connectors, error, isLoading, pendingConnector } =

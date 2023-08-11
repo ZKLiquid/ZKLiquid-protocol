@@ -24,7 +24,7 @@ function Header() {
   return (
     <div
       className={clsx(
-        'fixed top-0 left-0 xl:left-64 right-0 px-4 py-3 transition-all bg-black xl:px-8 xl:py-4 z-10',
+        'fixed top-0 left-0 xl:left-64 right-0 px-4 py-3 transition-all bg-black xl:px-8 xl:py-4 z-20',
         isOpen ? 'md:left-64' : 'md:left-20'
       )}
     >

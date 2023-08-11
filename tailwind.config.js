@@ -8,8 +8,10 @@ export default {
       backgroundImage: {
         gradient_custom:
           'linear-gradient(180deg, rgba(51, 237, 141, 0.2) 0%, rgba(9, 189, 187, 0.2) 100%)',
-        main: 'linear-gradient(133.34deg,#fd371f -34.27%,#ff844b 99.35%)',
+        main: 'linear-gradient(135deg, #DC40A4 0%, #6749D5 100%)',
+        'gradient-light': 'linear-gradient(180deg, #11C6B3 0%, #7A6CAC 100%)',
         'gradient-dark': 'linear-gradient(96.34deg,#141217,#0e0c12);',
+        greenGradient: 'linear-gradient(180deg, #33ED8D 0%, #09BDBB 100%)',
       },
       colors: {
         dark: {
