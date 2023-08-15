@@ -2,7 +2,15 @@ import { useState, Fragment, useEffect } from 'react';
 import { ArrowDown2, Repeat, Setting4 } from 'iconsax-react';
 
 import ModalRight from '../common/ModalRight';
-import { useAccount, useBalance, useNetwork, useSendTransaction } from 'wagmi';
+import {
+  erc20ABI,
+  useAccount,
+  useBalance,
+  useNetwork,
+  useSendTransaction,
+  useWaitForTransaction,
+  useWalletClient,
+} from 'wagmi';
 
 import Modal from '../common/Modal';
 import clsx from 'clsx';
@@ -13,22 +21,18 @@ import { toast } from 'react-toastify';
 import { parseEther, parseGwei } from 'viem';
 import { useDebounce } from 'usehooks-ts';
 
+import { ethers } from 'ethers';
+
 const chainAlliases = {
   1: 'ethereum',
   137: 'matic-network',
   56: 'binance-smart-chain',
 };
 
-const toleranceOptions = [0.1, 0.5, 1, 1.5];
-const trxSpeedOptions = ['Default', 'Standard', 'Fast', 'Instant'];
-
 function SwapCard() {
   const { address, isConnected } = useAccount();
   const [selectedDEX, setSelectedDEX] = useState(null);
   const [DEXs, setDEXs] = useState(null);
-  // const { data, isError, isLoading } = useToken({
-  //   address: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-  // });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -45,10 +49,12 @@ function SwapCard() {
 
   const [changeToken, setChangeToken] = useState(1);
 
-  const [tolerance, setTolerance] = useState(toleranceOptions[1]);
-  const [trxSpeed, setTrxSpeed] = useState(trxSpeedOptions[1]);
+  const [toleranceOptions, setToleranceOptions] = useState(null);
+  const [trxSpeedOptions, setTrxSpeedOptions] = useState(null);
 
-  const [gasPrice, setGasPrice] = useState(54.197206281);
+  const [tolerance, setTolerance] = useState(null);
+
+  const [gasPrice, setGasPrice] = useState(null);
 
   const debouncedValue = useDebounce(tokenOneAmount, 500);
 
@@ -71,6 +77,30 @@ function SwapCard() {
         console.log(err);
       });
   }, [chain]);
+
+  useEffect(() => {
+    axios
+      .get(
+        `https://v001.wallet.syntrum.com/wallet/getSwapSettings/${
+          chain ? chainAlliases[chain.id] : 'ethereum'
+        }`
+      )
+      .then((res) => {
+        console.log(res.data.groups[0].rows);
+        setToleranceOptions(res.data.groups[0].rows[0]);
+        setTrxSpeedOptions(res.data.groups[0].rows[1]);
+
+        setTolerance(res.data.groups[0].rows[0].value.default);
+        setGasPrice(res.data.groups[0].rows[1].value.default);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+
+  const handleSettingsSave = () => {
+    setIsSettingsModalOpen(false);
+  };
 
   const { data: balance } = useBalance({
     address,
@@ -114,12 +144,6 @@ function SwapCard() {
 
     setIsModalOpen(false);
   };
-
-  useEffect(() => {
-    if (tokenOneAmount && isConnected) {
-      getSwapData();
-    }
-  }, [tokenOne, tokenTwo]);
 
   const getSwapData = () => {
     let tokenOneProp = null;
@@ -170,8 +194,8 @@ function SwapCard() {
         ...tokenOneProp,
         ...tokenTwoProp,
         advanced: {
-          gasPrice: '90.737087652',
-          slippageTolerance: 0.5,
+          gasPrice: gasPrice || 0.000000000001,
+          slippageTolerance: tolerance || 0.5,
         },
       })
       .then(
@@ -184,6 +208,7 @@ function SwapCard() {
             setIsSwapLoading(false);
             return toast.error(response.data[0].reason);
           }
+          console.log(response.data);
           setDEXs(response.data);
           setSelectedDEX(response.data[0]);
           setTokenTwoAmount(response.data[0].toAmount);
@@ -200,27 +225,58 @@ function SwapCard() {
     setTokenTwoAmount(selectedDEX?.toAmount);
   }, [selectedDEX]);
 
-  const { sendTransaction } = useSendTransaction({
+  const { data, sendTransaction } = useSendTransaction({
     from: address,
     to: selectedDEX?.serviceData.to,
     data: selectedDEX?.serviceData.txData,
     value: parseEther(debouncedValue),
   });
 
-  const handleTrx = () => {
-    sendTransaction?.();
+  const { isLoading, isSuccess } = useWaitForTransaction({
+    hash: data?.hash,
+  });
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success('Transaction completed');
+      setTokenOneAmount('');
+      setTokenTwoAmount('');
+    }
+  }, [isSuccess]);
+
+  const { data: walletClient } = useWalletClient();
+  const handleTrx = async () => {
+    console.log(selectedDEX);
+    if (selectedDEX?.needApprove) {
+      const contract = new ethers.Contract(
+        selectedDEX.serviceData.tokenAddress,
+        erc20ABI,
+        walletClient
+      );
+
+      const tx = await contract.approve(
+        selectedDEX.serviceData.to,
+        ethers.parseUnits(selectedDEX.fromAmount)
+      );
+
+      await tx.wait();
+
+      toast.success('Approved!');
+    } else {
+      sendTransaction?.();
+    }
   };
 
   useEffect(() => {
-    // Do fetch here...
     // Triggers when "debouncedValue" changes
-    if (isConnected) {
-      if (!tokenOneAmount) return;
-      getSwapData();
-    } else if (tokenOneAmount) {
+    if (!isConnected && tokenOneAmount) {
       toast.error('Please connect your wallet');
     }
-  }, [debouncedValue]);
+
+    if (isConnected && tokenOneAmount) {
+      getSwapData();
+    }
+  }, [debouncedValue, tokenOne, tokenTwo]);
 
   const handleMaxBalance = () => {
     setTokenOneAmount(balance?.formatted);
@@ -430,51 +486,6 @@ function SwapCard() {
           </div>
         )}
 
-        {/* <div className="bg-gradient-to-b from-[#33ed8d] to-[#09BDBB] rounded-lg relative mt-12 ">
-          <div className="bg-gradient-to-b from-[#11C6B3] to-[#7A6CAC] rounded-lg absolute -top-4 left-4 p-3">
-            <p className="text-[14px] text-bold leading-[16px] text-[#000]">
-              Via Uniswap V3
-            </p>
-          </div>
-
-          <div className="flex justify-between items-center text-[#000] font-normal px-6 pt-8 pb-6">
-            <h3 className="leading-[23px] text-[20px]">6,448.99</h3>
-            <p className="leading-[16px] text-[14px]">
-              Est fee: 0.004 ETH = $7.88
-            </p>
-          </div>
-        </div>
-
-        <div className="flex justify-between mt-12 gap-4">
-          <div className="bg-[#252930] rounded-lg relative w-full">
-            <div className="bg-[#171720] rounded-lg absolute -top-4 left-4 p-3">
-              <p className="leading-[16px] text-[12px] font-bold text-[#979797]">
-                Via Pancakeswap V3
-              </p>
-            </div>
-            <div className="text-[#FFF] font-normal px-8 pt-8 pb-2">
-              <h3 className="leading-[23px] text-[20px]">6,448.99 </h3>
-              <p className="leading-[16px] text-[11px] pt-1">
-                Est fee: 0.004 ETH = $7.88
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-[#252930] rounded-lg relative w-full">
-            <div className="bg-[#171720] rounded-lg absolute -top-4 left-4 p-3">
-              <p className="leading-[16px] text-[12px] font-bold text-[#979797]">
-                Via Uniswap V2
-              </p>
-            </div>
-            <div className="text-[#FFF] font-normal px-8 pt-8 pb-2">
-              <h3 className="leading-[23px] text-[20px]">6,448.99</h3>
-              <p className="leading-[16px] text-[11px] pt-1">
-                Est fee: 0.004 ETH = $7.88
-              </p>
-            </div>
-          </div>
-        </div> */}
-
         {isSwapLoading && (
           <div className="py-8 flex justify-center">
             <svg
@@ -560,60 +571,62 @@ function SwapCard() {
       >
         <RadioGroup value={tolerance} onChange={setTolerance}>
           <RadioGroup.Label className="font-medium">
-            Slippage Tolerance
+            {toleranceOptions?.title}
           </RadioGroup.Label>
           <div className="flex gap-3 mt-3">
-            {toleranceOptions.map((option) => (
-              <RadioGroup.Option
-                key={option}
-                value={option}
-                className={({ active, checked }) =>
-                  clsx(
-                    active ? 'ring-1 ring-primary ring-offset-1 ' : '',
-                    checked
-                      ? 'bg-main text-white'
-                      : 'ring-1 ring-inset ring-dark-300 bg-dark-300 text-white hover:bg-dark-300/50',
-                    'flex items-center justify-center rounded-lg p-2 text-sm font-semibold flex-1 cursor-pointer'
-                  )
-                }
-              >
-                <RadioGroup.Label as="span">{option + '%'}</RadioGroup.Label>
-              </RadioGroup.Option>
-            ))}
+            {toleranceOptions &&
+              toleranceOptions.value.values.map((option) => (
+                <RadioGroup.Option
+                  key={option}
+                  value={option}
+                  className={({ active, checked }) =>
+                    clsx(
+                      active ? 'ring-1 ring-primary ring-offset-1 ' : '',
+                      checked
+                        ? 'bg-main text-white'
+                        : 'ring-1 ring-inset ring-dark-300 bg-dark-300 text-white hover:bg-dark-300/50',
+                      'flex items-center justify-center rounded-lg p-2 text-sm font-semibold flex-1 cursor-pointer'
+                    )
+                  }
+                >
+                  <RadioGroup.Label as="span">{option + '%'}</RadioGroup.Label>
+                </RadioGroup.Option>
+              ))}
           </div>
         </RadioGroup>
 
         <div className="my-6 h-px bg-dark-300"></div>
 
-        <RadioGroup value={trxSpeed} onChange={setTrxSpeed}>
+        <RadioGroup value={gasPrice} onChange={setGasPrice}>
           <RadioGroup.Label className="font-medium">
             Transaction Speed (GWEI)
           </RadioGroup.Label>
           <div className="flex gap-3 mt-3">
-            {trxSpeedOptions.map((option) => (
-              <RadioGroup.Option
-                key={option}
-                value={option}
-                className={({ active, checked }) =>
-                  clsx(
-                    active ? 'ring-1 ring-primary ring-offset-1 ' : '',
-                    checked
-                      ? 'bg-main text-white'
-                      : 'ring-1 ring-inset ring-dark-300 bg-dark-300 text-white hover:bg-dark-300/50',
-                    'flex items-center justify-center rounded-lg p-2 text-sm font-semibold flex-1 cursor-pointer'
-                  )
-                }
-              >
-                <RadioGroup.Label as="span">{option}</RadioGroup.Label>
-              </RadioGroup.Option>
-            ))}
+            {trxSpeedOptions &&
+              trxSpeedOptions.value.values.map((option) => (
+                <RadioGroup.Option
+                  key={option.name}
+                  value={option.price}
+                  className={({ active, checked }) =>
+                    clsx(
+                      active ? 'ring-1 ring-primary ring-offset-1 ' : '',
+                      checked
+                        ? 'bg-main text-white'
+                        : 'ring-1 ring-inset ring-dark-300 bg-dark-300 text-white hover:bg-dark-300/50',
+                      'flex items-center justify-center rounded-lg p-2 text-sm font-semibold flex-1 cursor-pointer'
+                    )
+                  }
+                >
+                  <RadioGroup.Label as="span">{option.name}</RadioGroup.Label>
+                </RadioGroup.Option>
+              ))}
           </div>
         </RadioGroup>
 
         <div className="my-6 h-px bg-dark-300"></div>
 
         <div>
-          <label htmlFor="gasPrice" className="block  font-medium">
+          <label htmlFor="gasPrice" className="block text-dark-100">
             Gas Price (Gwei)
           </label>
           <div className="mt-2">
@@ -628,7 +641,10 @@ function SwapCard() {
           </div>
         </div>
 
-        <button className="bg-main text-white font-semibold rounded-lg w-full p-3 transition-opacity hover:opacity-90 mt-6">
+        <button
+          className="bg-main text-white font-semibold rounded-lg w-full p-3 transition-opacity hover:opacity-90 mt-6"
+          onClick={handleSettingsSave}
+        >
           Save
         </button>
       </Modal>
