@@ -2,7 +2,7 @@ import { useState, Fragment, useEffect } from 'react';
 import { ArrowDown2, Repeat, Setting4 } from 'iconsax-react';
 
 import ModalRight from '../common/ModalRight';
-import { useAccount, useNetwork, useSendTransaction, useToken } from 'wagmi';
+import { useAccount, useBalance, useNetwork, useSendTransaction } from 'wagmi';
 
 import Modal from '../common/Modal';
 import clsx from 'clsx';
@@ -10,7 +10,7 @@ import { RadioGroup } from '@headlessui/react';
 import axios from 'axios';
 import Button from './Button';
 import { toast } from 'react-toastify';
-import { parseGwei } from 'viem';
+import { parseEther, parseGwei } from 'viem';
 import { useDebounce } from 'usehooks-ts';
 
 const chainAlliases = {
@@ -64,17 +64,21 @@ function SwapCard() {
       .then((res) => {
         console.log(res.data);
         setTokens(res.data);
-        setTokenOne(res.data[1]);
-        setTokenTwo(res.data[2]);
+        setTokenOne(res.data[0]);
+        setTokenTwo(res.data[1]);
       })
       .catch((err) => {
         console.log(err);
       });
   }, [chain]);
 
-  // const { data, isError, isLoading } = useBalance({
-  //   address: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
-  // });
+  const { data: balance } = useBalance({
+    address,
+    token:
+      tokenOne && tokenOne.type === 'token'
+        ? tokenOne.tokenData.tokenAddress
+        : null,
+  });
 
   const changeAmountHandler = (e) => {
     setTokenOneAmount(e.target.value);
@@ -86,6 +90,14 @@ function SwapCard() {
 
     setTokenOne(two);
     setTokenTwo(one);
+
+    const oneAmount = tokenOneAmount;
+    const twoAmount = tokenTwoAmount;
+
+    if (oneAmount && twoAmount) {
+      setTokenOneAmount(twoAmount);
+      setTokenTwoAmount(oneAmount);
+    }
   };
 
   const openModal = (id) => {
@@ -93,7 +105,7 @@ function SwapCard() {
     setIsModalOpen(true);
   };
 
-  const modifyToken = (i) => {
+  const selectToken = (i) => {
     if (changeToken === 1) {
       setTokenOne(tokens[i]);
     } else {
@@ -102,6 +114,12 @@ function SwapCard() {
 
     setIsModalOpen(false);
   };
+
+  useEffect(() => {
+    if (tokenOneAmount && isConnected) {
+      getSwapData();
+    }
+  }, [tokenOne, tokenTwo]);
 
   const getSwapData = () => {
     let tokenOneProp = null;
@@ -158,7 +176,14 @@ function SwapCard() {
       })
       .then(
         (response) => {
-          console.log(response);
+          if (!response.data.length) {
+            setIsSwapLoading(false);
+            return toast.error('No DEXs found');
+          }
+          if (response.data[0].success === false) {
+            setIsSwapLoading(false);
+            return toast.error(response.data[0].reason);
+          }
           setDEXs(response.data);
           setSelectedDEX(response.data[0]);
           setTokenTwoAmount(response.data[0].toAmount);
@@ -175,48 +200,31 @@ function SwapCard() {
     setTokenTwoAmount(selectedDEX?.toAmount);
   }, [selectedDEX]);
 
-  const swapHandler = () => {
-    if (!isConnected) return toast.error('Please connect your wallet');
-    if (!tokenOneAmount || tokenOneAmount <= 0)
-      return toast.error('Please enter valid amount');
-    getSwapData();
-  };
-
-  // const { data, sendTransaction } = useSendTransaction({
-  //   from: address,
-  //   to: selectedDEX?.serviceData.to,
-  //   data: selectedDEX?.serviceData.txData,
-  //   gasPrice: parseGwei('5'),
-  // });
+  const { sendTransaction } = useSendTransaction({
+    from: address,
+    to: selectedDEX?.serviceData.to,
+    data: selectedDEX?.serviceData.txData,
+    value: parseEther(debouncedValue),
+  });
 
   const handleTrx = () => {
-    console.log('send trx');
-
-    console.log(selectedDEX);
-    // axios
-    //   .get(
-    //     `https://v001.wallet.syntrum.com/wallet/getSwapSettings/${
-    //       chain ? chainAlliases[chain.id] : 'ethereum'
-    //     }`
-    //   )
-    //   .then((res) => {
-    //     console.log(res.data);
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //   });
-    // sendTransaction();
+    sendTransaction?.();
   };
 
   useEffect(() => {
     // Do fetch here...
     // Triggers when "debouncedValue" changes
     if (isConnected) {
-      tokenOne && tokenOneAmount && getSwapData();
+      if (!tokenOneAmount) return;
+      getSwapData();
     } else if (tokenOneAmount) {
       toast.error('Please connect your wallet');
     }
   }, [debouncedValue]);
+
+  const handleMaxBalance = () => {
+    setTokenOneAmount(balance?.formatted);
+  };
 
   return (
     <>
@@ -241,7 +249,10 @@ function SwapCard() {
               value={tokenOneAmount}
               onChange={changeAmountHandler}
             />
-            <button className="text-sm text-white uppercase font-semibold">
+            <button
+              className="text-sm text-white uppercase font-semibold"
+              onClick={handleMaxBalance}
+            >
               Max
             </button>
           </div>
@@ -279,9 +290,11 @@ function SwapCard() {
                 />
               </button>
             )}
-            <p className="text-xs md:text-sm text-dark-100 font-medium">
-              Your BTC balance: 0.6280
-            </p>
+            {balance && (
+              <p className="text-xs md:text-sm text-dark-100 font-medium">
+                Your {balance?.symbol} balance: {balance?.formatted}
+              </p>
+            )}
           </div>
         </div>
 
@@ -343,7 +356,7 @@ function SwapCard() {
                   />
                 )}
                 {tokenTwo.type === 'coin' ? (
-                  <span className="uppercase">{tokenOne.platformId}</span>
+                  <span className="uppercase">{tokenTwo.platformId}</span>
                 ) : (
                   <span>{tokenTwo?.tokenData.name}</span>
                 )}
@@ -487,7 +500,14 @@ function SwapCard() {
           </div>
         )}
 
-        <Button onClick={handleTrx} className="mt-6">
+        <Button
+          onClick={handleTrx}
+          className={clsx(
+            'mt-6',
+            !isConnected && 'cursor-not-allowed opacity-60'
+          )}
+          disabled={!isConnected}
+        >
           Approve
         </Button>
       </div>
@@ -504,7 +524,7 @@ function SwapCard() {
                 <button
                   key={token.platformId}
                   className="flex items-center w-full p-2 rounded-lg  transition-colors hover:bg-dark-300"
-                  onClick={() => modifyToken(i)}
+                  onClick={() => selectToken(i)}
                 >
                   <img
                     className="rounded-full overflow-hidden w-6 h-6 mr-2"
@@ -517,7 +537,7 @@ function SwapCard() {
                 <button
                   key={token.tokenData.name}
                   className="flex items-center w-full p-2 rounded-lg  transition-colors hover:bg-dark-300"
-                  onClick={() => modifyToken(i)}
+                  onClick={() => selectToken(i)}
                 >
                   <img
                     className="rounded-full overflow-hidden w-6 h-6 mr-2"
