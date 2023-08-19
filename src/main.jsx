@@ -8,11 +8,14 @@ import { ToastContainer } from 'react-toastify';
 
 import App from './App.jsx';
 import './index.css';
+import { WagmiContextProvider } from './context/WagmiContext';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Wagmi>
-      <App />
+      <WagmiContextProvider>
+        <App />
+      </WagmiContextProvider>
       <ToastContainer
         hideProgressBar
         pauseOnHover={false}

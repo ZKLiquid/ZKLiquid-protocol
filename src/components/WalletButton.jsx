@@ -1,42 +1,23 @@
 import clsx from 'clsx';
-import { useState } from 'react';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useContext, useState } from 'react';
 
 import { Fragment } from 'react';
 import { Menu, Transition } from '@headlessui/react';
 import CoinSVG from '@/assets/svg/coins.svg';
 import { toast } from 'react-toastify';
 
-import Modal from '../common/Modal';
-
-import { ArrowDown2, ArrowRight2, Copy, LogoutCurve } from 'iconsax-react';
+import { ArrowDown2, Copy, LogoutCurve } from 'iconsax-react';
+import WalletsModal from './WalletsModal';
+import { WagmiContext } from '../context/WagmiContext';
 
 function WalletButton({ width }) {
-  const { address, isConnected, connector } = useAccount();
+  const [isOpen, setIsOpen] = useState(false);
 
-  const [isOpenWalletModal, setIsOpenWalletModal] = useState(false);
-  const { connect, connectors, error, isLoading, pendingConnector } =
-    useConnect({
-      onSuccess() {
-        toast.success('Connected.');
-        setIsOpenWalletModal(false);
-      },
-    });
-
-  const { disconnect } = useDisconnect();
-
-  const disconnectHandler = () => {
-    disconnect();
-    toast.success('Disconnected.');
-  };
+  const { disconnect, address, isConnected } = useContext(WagmiContext);
 
   const copyAddress = () => {
     navigator.clipboard.writeText(address);
     toast.success('Copied to clipboard.');
-  };
-
-  const connectHandler = (connector) => {
-    connect({ connector });
   };
 
   if (isConnected) {
@@ -81,7 +62,7 @@ function WalletButton({ width }) {
                 <Menu.Item>
                   <button
                     className="px-4 py-2 text-sm transition-colors flex items-center gap-2 w-full text-left hover:bg-dark-300"
-                    onClick={disconnectHandler}
+                    onClick={() => disconnect()}
                   >
                     <LogoutCurve size="16" color="#fff" />
                     Disconnect
@@ -111,41 +92,11 @@ function WalletButton({ width }) {
           'flex gap-2 items-center bg-[#2769E4] py-2.5 px-4 rounded-full text-sm font-medium text-center justify-center',
           width === 'full' && 'w-full'
         )}
-        onClick={() => setIsOpenWalletModal(true)}
+        onClick={() => setIsOpen(true)}
       >
         Connect Wallet
       </button>
-      <Modal
-        open={isOpenWalletModal}
-        onClose={() => setIsOpenWalletModal(false)}
-        heading="Connect to a wallet"
-      >
-        <div className="space-y-3">
-          {connectors.map((connector) => (
-            <button
-              disabled={!connector.ready}
-              key={connector.id}
-              onClick={() => connectHandler(connector)}
-              className="flex w-full text-left items-center gap-2 px-3 py-2  bg-dark-300 rounded-lg hover:bg-opacity-60"
-            >
-              <img
-                className="w-12 h-12"
-                src={`./walletIcons/${connector.id}.svg`}
-                alt=""
-              />
-              {connector.name}
-              {!connector.ready && ' (unsupported)'}
-              {isLoading &&
-                connector.id === pendingConnector?.id &&
-                ' (connecting)'}
-
-              <ArrowRight2 size="20" className="ml-auto" />
-            </button>
-          ))}
-        </div>
-
-        {error && <div>{error.message}</div>}
-      </Modal>
+      <WalletsModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
     </>
   );
 }

@@ -1,10 +1,9 @@
-import { useState, Fragment, useEffect } from 'react';
+import { useState, Fragment, useEffect, useContext } from 'react';
 import { ArrowDown2, Repeat, Setting4 } from 'iconsax-react';
 
 import ModalRight from '../common/ModalRight';
 import {
   erc20ABI,
-  useAccount,
   useBalance,
   useNetwork,
   useSendTransaction,
@@ -22,6 +21,8 @@ import { parseEther, parseGwei } from 'viem';
 import { useDebounce } from 'usehooks-ts';
 
 import { ethers } from 'ethers';
+import WalletsModal from './WalletsModal';
+import { WagmiContext } from '../context/WagmiContext';
 
 const chainAlliases = {
   1: 'ethereum',
@@ -30,7 +31,9 @@ const chainAlliases = {
 };
 
 function SwapCard() {
-  const { address, isConnected } = useAccount();
+  const [isOpen, setIsOpen] = useState(false);
+  const { address, isConnected } = useContext(WagmiContext);
+
   const [selectedDEX, setSelectedDEX] = useState(null);
   const [DEXs, setDEXs] = useState(null);
 
@@ -86,7 +89,6 @@ function SwapCard() {
         }`
       )
       .then((res) => {
-        console.log(res.data.groups[0].rows);
         setToleranceOptions(res.data.groups[0].rows[0]);
         setTrxSpeedOptions(res.data.groups[0].rows[1]);
 
@@ -208,7 +210,7 @@ function SwapCard() {
             setIsSwapLoading(false);
             return toast.error(response.data[0].reason);
           }
-          console.log(response.data);
+
           setDEXs(response.data);
           setSelectedDEX(response.data[0]);
           setTokenTwoAmount(response.data[0].toAmount);
@@ -260,6 +262,7 @@ function SwapCard() {
       );
 
       await tx.wait();
+      getSwapData();
 
       toast.success('Approved!');
     } else {
@@ -269,6 +272,7 @@ function SwapCard() {
 
   useEffect(() => {
     // Triggers when "debouncedValue" changes
+
     if (!isConnected && tokenOneAmount) {
       toast.error('Please connect your wallet');
     }
@@ -511,16 +515,15 @@ function SwapCard() {
           </div>
         )}
 
-        <Button
-          onClick={handleTrx}
-          className={clsx(
-            'mt-6',
-            !isConnected && 'cursor-not-allowed opacity-60'
+        <div className="mt-6">
+          {isConnected ? (
+            <Button onClick={handleTrx}>
+              {selectedDEX?.needApprove ? 'Approve' : 'Swap'}
+            </Button>
+          ) : (
+            <Button onClick={() => setIsOpen(true)}>Connect Wallet</Button>
           )}
-          disabled={!isConnected}
-        >
-          Approve
-        </Button>
+        </div>
       </div>
 
       <ModalRight
@@ -648,6 +651,8 @@ function SwapCard() {
           Save
         </button>
       </Modal>
+
+      <WalletsModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
     </>
   );
 }
