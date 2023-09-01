@@ -23,7 +23,15 @@ export default {
           500: '#0E0C12',
         },
         primary: '#ff844b',
+        purple: {
+          bg: '#372f47',
+          border: '#262130'
+        }
       },
+      boxShadow: {
+        'input': 'inset 0px 2px 2px -1px rgba(74,74,104,.1)',
+        'input-focus': '0px 0px 0px 1px #7645d9,0px 0px 0px 4px rgba(118,69,217,.6)'
+      }
     },
     fontFamily: {
       sans: ['Inter', 'Poppins', 'Roboto', 'sans-serif'],

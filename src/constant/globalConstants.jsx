@@ -6,6 +6,19 @@ import syntrum from '../assets/svg/syntrum coin.svg';
 import tether from '../assets/svg/tether-coin.svg';
 import binance from '../assets/svg/Binance-Coin.svg';
 
+export const NETWORK_COINS = {
+  'ethereum': {
+    name: 'Ethereum Token',
+    symbol: 'ETH',
+    decimals: 18
+  },
+  'bnb': {
+    name: 'Binance Chain Native Token',
+    symbol: 'BNB',
+    decimals: 18
+  }
+}
+
 export const table = [
   {
     icon: syntrum,
