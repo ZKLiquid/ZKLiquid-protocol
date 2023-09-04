@@ -149,6 +149,8 @@ function SwapCard() {
     
       setFilteredTokensTo(filteredList);
     }
+
+    console.log(filteredTokensTo);
   }
 
   const updateTokenList = useCallback(() => {
@@ -580,7 +582,9 @@ function SwapCard() {
 
                         <div
                           className={`flex w-full justify-between ${
-                            index < 2 ? 'flex-col md:flex-row' : 'flex-col'
+                            (DEXs.length % 2 == 0 && index < 2) || (DEXs.length % 2 == 1 && index < 1)
+                              ? 'flex-col md:flex-row' 
+                              : 'flex-col'
                           }`}
                         >
                           <p className={`text-xl font-medium`}>
