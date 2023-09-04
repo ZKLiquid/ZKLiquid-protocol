@@ -73,6 +73,8 @@ function SwapCard() {
   const [isSwapLoading, setIsSwapLoading] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
+  const [approveHash, setApproveHash] = useState('');
+
   useEffect(() => {
     axios
       .get(
@@ -83,12 +85,10 @@ function SwapCard() {
       .then((res) => {
         setTokens(res.data);
 
-        if (tokenOne?.type === 'coin') {
-          if (res.data.length > 1) {
-            setTokenOne(res.data[0]);
-          } else {
-            setTokenOne(tokens[0]);
-          }
+        if (res.data.length > 1) {
+          setTokenOne(res.data[0]);
+        } else {
+          setTokenOne(tokens[0]);
         }
 
         if (res.data.length > 2) {
@@ -188,6 +188,7 @@ function SwapCard() {
       tokenOne && tokenOne.type === 'token'
         ? tokenOne.tokenData.tokenAddress
         : null,
+    watch: true,
   });
 
   const changeAmountHandler = (e) => {
@@ -346,6 +347,18 @@ function SwapCard() {
     }
   }, [isSuccess]);
 
+  const { isLoading: isApproveLoading, isSuccess: isApproveSuccess } = useWaitForTransaction({
+    hash: approveHash,
+  });
+
+  useEffect(() => {
+    if (isApproveSuccess) {
+      setSelectedDEX(prevState => ({ ...prevState, needApprove: false }));
+      toast.success('Approved!');
+      setIsActionLoading(false);
+    }
+  }, [isApproveSuccess]);
+
   const handleTrx = async () => {
     console.log(selectedDEX);
 
@@ -360,10 +373,7 @@ function SwapCard() {
       });
 
       const { hash } = await writeContract(config);
-      getSwapData();
-
-      setIsActionLoading(false);
-      toast.success('Approved!');
+      setApproveHash(hash);
     } else {
       sendTransaction?.();
     }
@@ -548,7 +558,9 @@ function SwapCard() {
                           : 'bg-dark-300 text-white'
                       }
                       relative flex cursor-pointer rounded-lg p-5 py-6 shadow-md focus:outline-none ${
-                        index < 2 ? 'lg:col-span-2' : ''
+                        (DEXs.length % 2 == 0 && index < 2) || (DEXs.length % 2 == 1 && index < 1)
+                          ? 'lg:col-span-2'
+                          : ''
                       }`
                     }
                   >
