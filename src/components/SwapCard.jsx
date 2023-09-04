@@ -188,7 +188,7 @@ function SwapCard() {
       tokenOne && tokenOne.type === 'token'
         ? tokenOne.tokenData.tokenAddress
         : null,
-    watch: true,
+    // watch: true,
   });
 
   const changeAmountHandler = (e) => {
@@ -228,7 +228,7 @@ function SwapCard() {
     if (changeToken === 1) {
       setTokenOne(filteredTokens[i]);
     } else {
-      setTokenTwo(filteredTokens[i]);
+      setTokenTwo(filteredTokensTo[i]);
     }
 
     setIsModalOpen(false);
@@ -580,7 +580,9 @@ function SwapCard() {
 
                         <div
                           className={`flex w-full justify-between ${
-                            index < 2 ? 'flex-col md:flex-row' : 'flex-col'
+                            (DEXs.length % 2 == 0 && index < 2) || (DEXs.length % 2 == 1 && index < 1)
+                              ? 'flex-col md:flex-row' 
+                              : 'flex-col'
                           }`}
                         >
                           <p className={`text-xl font-medium`}>
