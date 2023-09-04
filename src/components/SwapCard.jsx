@@ -188,7 +188,7 @@ function SwapCard() {
       tokenOne && tokenOne.type === 'token'
         ? tokenOne.tokenData.tokenAddress
         : null,
-    watch: true,
+    // watch: true,
   });
 
   const changeAmountHandler = (e) => {
