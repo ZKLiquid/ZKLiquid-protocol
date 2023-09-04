@@ -1,14 +1,21 @@
-import { Fragment } from 'react';
+import { Fragment, useEffect } from 'react';
 import { Menu, Transition } from '@headlessui/react';
 import { useNetwork, useSwitchNetwork } from 'wagmi';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import { ArrowDown2 } from 'iconsax-react';
+import { toast } from 'react-toastify';
 
 function SwitchNetworkDropdown({ width }) {
   const { chain } = useNetwork();
   const { chains, error, isLoading, pendingChainId, switchNetwork } =
     useSwitchNetwork();
+
+  useEffect(() => {
+    if (error && error.message) {
+      toast.error(error.message);
+    }
+  }, [error]);
 
   return (
     <Menu
@@ -75,8 +82,6 @@ function SwitchNetworkDropdown({ width }) {
                   </button>
                 </Menu.Item>
               ))}
-
-              <div>{error && error.message}</div>
             </Menu.Items>
           </Transition>
         </>
