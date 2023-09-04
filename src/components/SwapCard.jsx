@@ -149,8 +149,6 @@ function SwapCard() {
     
       setFilteredTokensTo(filteredList);
     }
-
-    console.log(filteredTokensTo);
   }
 
   const updateTokenList = useCallback(() => {
@@ -230,7 +228,7 @@ function SwapCard() {
     if (changeToken === 1) {
       setTokenOne(filteredTokens[i]);
     } else {
-      setTokenTwo(filteredTokens[i]);
+      setTokenTwo(filteredTokensTo[i]);
     }
 
     setIsModalOpen(false);
