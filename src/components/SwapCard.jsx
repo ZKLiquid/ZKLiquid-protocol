@@ -122,9 +122,6 @@ function SwapCard() {
   }, []);
 
   const updateTokenLists = (tempTokenList, tokenOne, tokenTwo) => {
-    console.log("tokenOne?", tokenOne);
-    console.log("tokenTwo?", tokenTwo);
-
     if(tokenTwo?.type === 'coin') {
       const filteredList = tempTokenList.filter((item) => {
         return !(item.type === 'coin' && item.platformId === tokenTwo?.platformId);
@@ -291,6 +288,7 @@ function SwapCard() {
       })
       .then(
         (response) => {
+          console.log(response.data);
           if (!response.data.length) {
             setIsSwapLoading(false);
             return toast.error('No DEXs found');
@@ -577,7 +575,7 @@ function SwapCard() {
                             {formatBalance(dex.toAmount)}
                           </p>
                           <p className="text-sm font-medium">
-                            Est fee: {dex.feeAmount}
+                            Est fee: {formatBalance(dex.feeAmount)}
                           </p>
                         </div>
                       </>
@@ -616,16 +614,22 @@ function SwapCard() {
 
         <div className="mt-6">
           {isConnected ? (
-            <Button onClick={handleTrx} disabled={(isLoading || isActionLoading)}>
-              {(isLoading || isActionLoading) ? (
-                <>
-                  <ClipLoader size={20} color={'#ffffff'} loading={true} className='relative top-[3px]' />
-                  <span className="ml-2">Processing...</span>
-                </>
-              ) : (
-                selectedDEX?.needApprove ? 'Approve' : 'Swap'
-              )}
-            </Button>
+            parseFloat(tokenOneAmount) > 0 ? (
+              <Button onClick={handleTrx} disabled={(isLoading || isActionLoading)}>
+                {(isLoading || isActionLoading) ? (
+                  <>
+                    <ClipLoader size={20} color={'#ffffff'} loading={true} className='relative top-[3px]' />
+                    <span className="ml-2">Processing...</span>
+                  </>
+                ) : (
+                  selectedDEX?.needApprove ? 'Approve' : 'Swap'
+                )}
+              </Button>
+            ) : (
+              <Button onClick={handleTrx} disabled={true}>
+                Swap
+              </Button>
+            )
           ) : (
             <Button onClick={() => setIsOpen(true)}>Connect Wallet</Button>
           )}
