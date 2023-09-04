@@ -1,7 +1,8 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import Modal from '../common/Modal';
 
 import { ArrowRight2 } from 'iconsax-react';
+import { toast } from 'react-toastify';
 import { WagmiContext } from '../context/WagmiContext';
 
 function WalletsModal({ isOpen, onClose }) {
@@ -12,6 +13,13 @@ function WalletsModal({ isOpen, onClose }) {
     connect({ connector });
     onClose();
   };
+
+  useEffect(() => {
+    if (connectError && connectError.message) {
+      toast.error(connectError.message);
+    }
+  }, [connectError]);
+
   return (
     <Modal open={isOpen} onClose={onClose} heading="Connect to a wallet">
       <div className="space-y-3">
@@ -37,8 +45,6 @@ function WalletsModal({ isOpen, onClose }) {
           </button>
         ))}
       </div>
-
-      {connectError && <div>{connectError.message}</div>}
     </Modal>
   );
 }

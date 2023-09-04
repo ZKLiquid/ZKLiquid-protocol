@@ -8,13 +8,21 @@ import binance from '../assets/svg/Binance-Coin.svg';
 
 export const NETWORK_COINS = {
   'ethereum': {
+    platformId: 1,
     name: 'Ethereum Token',
     symbol: 'ETH',
     decimals: 18
   },
-  'bnb': {
+  'binance-smart-chain': {
+    platformId: 56,
     name: 'Binance Chain Native Token',
     symbol: 'BNB',
+    decimals: 18
+  },
+  'matic-network': {
+    platformId: 137,
+    name: 'MATIC',
+    symbol: 'MATIC',
     decimals: 18
   }
 }
