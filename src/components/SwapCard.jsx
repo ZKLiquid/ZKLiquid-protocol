@@ -12,6 +12,7 @@ import {
   useWaitForTransaction,
 } from 'wagmi';
 import { prepareWriteContract, writeContract } from '@wagmi/core';
+import { fetchBalance } from '@wagmi/core';
 
 import Modal from '../common/Modal';
 import clsx from 'clsx';
@@ -50,6 +51,8 @@ function SwapCard() {
   const { chain } = useNetwork();
 
   const [tokens, setTokens] = useState([]);
+  const [tokenWithBalances, setTokenBalances] = useState([]);
+
   const [filteredTokens, setFilteredTokens] = useState([]);
   const [filteredTokensTo, setFilteredTokensTo] = useState([]);
 
@@ -72,6 +75,7 @@ function SwapCard() {
 
   const [isSwapLoading, setIsSwapLoading] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const [isSwapAvailable, setIsSwapAvailable] = useState(false);
 
   const [approveHash, setApproveHash] = useState('');
 
@@ -152,7 +156,7 @@ function SwapCard() {
   }
 
   const updateTokenList = useCallback(() => {
-    const tempTokenList = tokens.filter(tokenInfo => {
+    const tempTokenList = tokenWithBalances.filter(tokenInfo => {
       const searchKeyword = tokenInfo.type === 'coin' ? tokenInfo.platformId : `${tokenInfo.tokenData.name}-${tokenInfo.tokenData.symbol}-${tokenInfo.tokenData.tokenAddress}`;
       return searchKeyword.toLowerCase().indexOf(debouncedTokenSearch.toLowerCase()) >= 0;
     });
@@ -160,23 +164,23 @@ function SwapCard() {
       if (tempTokenList.length > 1) {
         setTokenOne(tempTokenList[0]);
       } else {
-        setTokenOne(tokens[0]);
+        setTokenOne(tokenWithBalances[0]);
       }
     }
     if (!tokenTwo) {
       if (tempTokenList.length > 2) {
         setTokenTwo(tempTokenList[1]);
       } else {
-        setTokenTwo(tokens[1]);
+        setTokenTwo(tokenWithBalances[1]);
       }
     }
 
     updateTokenLists(tempTokenList, tokenOne, tokenTwo);
-  }, [debouncedTokenSearch, tokens])
+  }, [debouncedTokenSearch, tokenWithBalances])
 
   useEffect(() => {
     updateTokenList();
-  }, [debouncedTokenSearch, tokens, updateTokenList])
+  }, [debouncedTokenSearch, tokenWithBalances, updateTokenList])
 
   const handleSettingsSave = () => {
     setIsSettingsModalOpen(false);
@@ -188,11 +192,14 @@ function SwapCard() {
       tokenOne && tokenOne.type === 'token'
         ? tokenOne.tokenData.tokenAddress
         : null,
-    // watch: true,
   });
 
   const changeAmountHandler = (e) => {
-    setTokenOneAmount(e.target.value);
+    if (parseFloat(e.target.value) > 0) {
+      getSwapData(e.target.value);
+    } else {
+      setTokenOneAmount(e.target.value);
+    }
   };
 
   const switchTokensHandler = () => {
@@ -210,7 +217,7 @@ function SwapCard() {
       setTokenTwoAmount(oneAmount);
     }
 
-    updateTokenLists(tokens, two, one);
+    updateTokenLists(tokenWithBalances, two, one);
   };
 
   const openModal = (id) => {
@@ -234,7 +241,9 @@ function SwapCard() {
     setIsModalOpen(false);
   };
 
-  const getSwapData = () => {
+  const getSwapData = (amount) => {
+    setTokenOneAmount(amount);
+
     let tokenOneProp = null;
     let tokenTwoProp = null;
 
@@ -244,14 +253,14 @@ function SwapCard() {
       tokenOneProp = {
         from: {
           type: tokenOne.type,
-          amount: tokenOneAmount,
+          amount: amount,
         },
       };
     } else {
       tokenOneProp = {
         from: {
           type: tokenOne.type,
-          amount: tokenOneAmount,
+          amount: amount,
           tokenData: {
             tokenAddress: tokenOne.tokenData.tokenAddress,
           },
@@ -289,20 +298,109 @@ function SwapCard() {
       })
       .then(
         (response) => {
-          console.log(response.data);
           if (!response.data.length) {
             setIsSwapLoading(false);
+            setIsSwapAvailable(false);
             return toast.error('No DEXs found');
           }
+
+          let isAvailable = true;
+
           if (response.data[0].success === false) {
-            setIsSwapLoading(false);
-            return toast.error(response.data[0].reason);
+            isAvailable = false;
+            toast.error(response.data[0].reason);
           }
 
           setDEXs(response.data);
           setSelectedDEX(response.data[0]);
           setTokenTwoAmount(response.data[0].toAmount);
           setIsSwapLoading(false);
+
+          isAvailable ? setIsSwapAvailable(true) : setIsSwapAvailable(false);
+        },
+        (error) => {
+          console.log(error);
+          setIsSwapLoading(false);
+        }
+      );
+  };
+
+  const getEstimatedSwapData = (amount) => {
+    setTokenTwoAmount(amount);
+
+    let tokenOneProp = null;
+    let tokenTwoProp = null;
+
+    setIsSwapLoading(true);
+
+    if (tokenOne.type === 'coin') {
+      tokenOneProp = {
+        from: {
+          type: tokenOne.type,
+        },
+      };
+    } else {
+      tokenOneProp = {
+        from: {
+          type: tokenOne.type,
+          tokenData: {
+            tokenAddress: tokenOne.tokenData.tokenAddress,
+          },
+        },
+      };
+    }
+
+    if (tokenTwo.type === 'coin') {
+      tokenTwoProp = {
+        to: {
+          type: tokenTwo.type,
+          amount: amount
+        },
+      };
+    } else {
+      tokenTwoProp = {
+        to: {
+          type: tokenTwo.type,
+          amount: amount,
+          tokenData: {
+            tokenAddress: tokenTwo.tokenData.tokenAddress,
+          },
+        },
+      };
+    }
+
+    axios
+      .post('https://v001.wallet.syntrum.com/wallet/getSwapData', {
+        platform: chain ? chainAlliases[chain.id] : 'ethereum',
+        address,
+        ...tokenOneProp,
+        ...tokenTwoProp,
+        advanced: {
+          gasPrice: gasPrice || 0.000000000001,
+          slippageTolerance: tolerance || 0.5,
+        },
+      })
+      .then(
+        (response) => {
+          if (!response.data.length) {
+            setIsSwapLoading(false);
+            setIsSwapAvailable(false);
+            return toast.error('No DEXs found');
+          }
+
+          let isAvailable = true;
+
+          if (response.data[0].success === false) {
+            isAvailable = false;
+            toast.error(response.data[0].reason);
+          }
+
+          setDEXs(response.data);
+          setSelectedDEX(response.data[0]);
+          setTokenOneAmount(response.data[0].fromAmount);
+          setIsSwapLoading(false);
+
+          isAvailable ? setIsSwapAvailable(true) : setIsSwapAvailable(false);
         },
         (error) => {
           console.log(error);
@@ -325,13 +423,19 @@ function SwapCard() {
   }
 
   useEffect(() => {
-    setTokenTwoAmount(selectedDEX?.toAmount);
+    if (Number(selectedDEX?.toAmount) !== Number(tokenTwoAmount)) {
+      setTokenTwoAmount(selectedDEX?.toAmount);
+    }
+
+    if (Number(selectedDEX?.fromAmount) !== Number(tokenOneAmount)) {
+      setTokenOneAmount(selectedDEX?.fromAmount);
+    }
   }, [selectedDEX]);
 
   const { data, sendTransaction } = useSendTransaction({
     from: address,
-    to: selectedDEX?.serviceData.to,
-    data: selectedDEX?.serviceData.txData,
+    to: selectedDEX?.serviceData?.to,
+    data: selectedDEX?.serviceData?.txData,
     value: tokenOne?.type === 'coin' ? parseEther(debouncedValue) : '',
   });
 
@@ -380,20 +484,51 @@ function SwapCard() {
   };
 
   useEffect(() => {
-    // Triggers when "debouncedValue" changes
-
     if (!isConnected && tokenOneAmount) {
       toast.error('Please connect your wallet');
     }
 
     if (isConnected && tokenOneAmount && parseFloat(tokenOneAmount) > 0) {
-      getSwapData();
+      getSwapData(tokenOneAmount);
     }
-  }, [debouncedValue, tokenOne, tokenTwo]);
+  }, [tokenOne, tokenTwo]);
 
   const handleMaxBalance = () => {
-    setTokenOneAmount(balance?.formatted);
+    if (parseFloat(balance?.formatted) > 0) {
+      getSwapData(balance?.formatted);
+    } else {
+      setTokenOneAmount(balance?.formatted);
+    }
   };
+
+  useEffect(() => {
+    const fetchWalletBalance = async () => {
+      const updatedTokens = await Promise.all(
+        tokens.map(async (token) => {
+          if (token.type === 'token') {
+            const balance = await fetchBalance({
+              address,
+              token: token.tokenData?.tokenAddress
+            });
+
+            return { ...token, balance: balance.formatted };
+          } else {
+            const balance = await fetchBalance({
+              address,
+            });
+
+            return { ...token, balance: balance.formatted };
+          }
+        })
+      );
+
+      setTokenBalances(updatedTokens);
+    }
+
+    if (tokens.length > 1) {
+      fetchWalletBalance();
+    }
+  }, [chain, tokens])
 
   return (
     <>
@@ -450,7 +585,7 @@ function SwapCard() {
                 {tokenOne?.type === 'coin' ? (
                   <span className="uppercase">{NETWORK_COINS[tokenOne.platformId].symbol}</span>
                 ) : (
-                  <span>{tokenOne?.tokenData.name}</span>
+                  <span>{tokenOne?.tokenData.symbol}</span>
                 )}
                 <ArrowDown2
                   size="16"
@@ -479,14 +614,15 @@ function SwapCard() {
         <div className="flex items-end justify-between mt-4">
           <div className="flex flex-col items-start space-y-3">
             <p className="text-sm font-medium text-dark-100">To</p>
-            <div
+            <input
               type="number"
               className="w-full text-xl font-bold text-white bg-transparent border-0 outline-none md:text-3xl placeholder:text-dark-200"
               placeholder="0.00"
-              disabled={true}
-              value={tokenTwoAmount}
-            >
-              {tokenOneAmount ? (
+              // disabled={true}
+              value={formatBalance(tokenTwoAmount)}
+              onChange={(e) => getEstimatedSwapData(e.target.value)}
+            />
+              {/* {tokenOneAmount ? (
                 <div>
                   {tokenTwoAmount ? (
                     formatBalance(tokenTwoAmount)
@@ -497,10 +633,7 @@ function SwapCard() {
               ) : (
                 <span className="text-dark-200">0.00</span>
               )}
-            </div>
-            <button className="text-xs font-medium md:text-sm text-dark-100">
-              $23,805.00
-            </button>
+            </div> */}
           </div>
 
           <div className="flex-shrink-0 space-y-2 text-right">
@@ -527,7 +660,7 @@ function SwapCard() {
                 {tokenTwo?.type === 'coin' ? (
                   <span className="uppercase">{NETWORK_COINS[tokenTwo.platformId].symbol}</span>
                 ) : (
-                  <span>{tokenTwo?.tokenData.name}</span>
+                  <span>{tokenTwo?.tokenData.symbol}</span>
                 )}
                 <ArrowDown2
                   size="16"
@@ -536,9 +669,6 @@ function SwapCard() {
                 />
               </button>
             )}
-            <p className="text-xs font-medium md:text-sm text-dark-100">
-              1 BTC= 60030.6280
-            </p>
           </div>
         </div>
 
@@ -628,7 +758,7 @@ function SwapCard() {
 
         <div className="mt-6">
           {isConnected ? (
-            parseFloat(tokenOneAmount) > 0 ? (
+            (parseFloat(tokenOneAmount) > 0 && isSwapAvailable) ? (
               <Button onClick={handleTrx} disabled={(isLoading || isActionLoading)}>
                 {(isLoading || isActionLoading) ? (
                   <>
@@ -681,11 +811,9 @@ function SwapCard() {
                     <div className='text-base'>{NETWORK_COINS[token.platformId].symbol}</div>
                     <div className='text-sm text-gray-400'>{NETWORK_COINS[token.platformId].name}</div>
                   </div>
-                  <ArrowRight
-                    size="16"
-                    className="flex-shrink-0 -mr-1 text-white"
-                    aria-hidden="true"
-                  />
+                  <p className="flex-shrink-0 -mr-1 text-white">
+                    {formatBalance(token.balance)}
+                  </p>
                 </button>
               ) : (
                 <button
@@ -704,11 +832,9 @@ function SwapCard() {
                     <div className='text-base'>{token.tokenData.symbol}</div>
                     <div className='text-sm text-gray-400'>{token.tokenData.name}</div>
                   </div>
-                  <ArrowRight
-                    size="16"
-                    className="flex-shrink-0 -mr-1 text-white"
-                    aria-hidden="true"
-                  />
+                  <p className="flex-shrink-0 -mr-1 text-white">
+                    {formatBalance(token.balance)}
+                  </p>
                 </button>
               )
             )
@@ -730,11 +856,9 @@ function SwapCard() {
                     <div className='text-base'>{NETWORK_COINS[token.platformId].symbol}</div>
                     <div className='text-sm text-gray-400'>{NETWORK_COINS[token.platformId].name}</div>
                   </div>
-                  <ArrowRight
-                    size="16"
-                    className="flex-shrink-0 -mr-1 text-white"
-                    aria-hidden="true"
-                  />
+                  <p className="flex-shrink-0 -mr-1 text-white">
+                    {formatBalance(token.balance)}
+                  </p>
                 </button>
               ) : (
                 <button
@@ -753,11 +877,9 @@ function SwapCard() {
                     <div className='text-base'>{token.tokenData.symbol}</div>
                     <div className='text-sm text-gray-400'>{token.tokenData.name}</div>
                   </div>
-                  <ArrowRight
-                    size="16"
-                    className="flex-shrink-0 -mr-1 text-white"
-                    aria-hidden="true"
-                  />
+                  <p className="flex-shrink-0 -mr-1 text-white">
+                    {formatBalance(token.balance)}
+                  </p>
                 </button>
               )
             )
