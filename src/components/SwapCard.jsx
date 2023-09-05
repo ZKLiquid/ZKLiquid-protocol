@@ -71,7 +71,7 @@ function SwapCard() {
 
   const [gasPrice, setGasPrice] = useState(null);
 
-  const debouncedValue = useDebounce(tokenOneAmount, 500);
+  const debouncedValue = useDebounce(tokenOneAmount, '500');
 
   const [isSwapLoading, setIsSwapLoading] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
@@ -436,7 +436,7 @@ function SwapCard() {
     from: address,
     to: selectedDEX?.serviceData?.to,
     data: selectedDEX?.serviceData?.txData,
-    value: tokenOne?.type === 'coin' ? parseEther(debouncedValue) : '',
+    value: tokenOne?.type === 'coin' ? parseEther(debouncedValue || '0') : '',
   });
 
   const { isLoading, isSuccess } = useWaitForTransaction({
