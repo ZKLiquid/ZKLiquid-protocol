@@ -34,7 +34,7 @@ const chainAlliases = {
   137: 'matic-network',
 };
 
-function SwapCard() {
+function SwapCard({ selectedToken }) {
   const [isOpen, setIsOpen] = useState(false);
   const { address, isConnected } = useContext(WagmiContext);
 
@@ -114,13 +114,16 @@ function SwapCard() {
         `https://v001.wallet.syntrum.com/wallet/swapAssets/${platformId}?search=${debouncedTokenSearch}`
       )
       .then((res) => {
-        console.log(res.data);
         setTokens(res.data);
       })
       .catch((err) => {
         console.log(err);
       });
   }, [debouncedTokenSearch]);
+
+  useEffect(() => {
+    setTokenOne(selectedToken);
+  }, [selectedToken])
 
   useEffect(() => {
     axios
