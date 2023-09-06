@@ -53,7 +53,7 @@ function TopTokensList({ onTokenSelect }) {
             Top Tokens
           </button>
           <button 
-            className="text-[#FFFFFF] text-[16px] px-[15px] py-[10px] rounded-full font-bold hover:bg-zinc-800"
+            className="text-[#FFFFFF] text-[16px] px-[15px] py-[10px] rounded-full font-bold hover:bg-dark-300"
           >
             Trade History
           </button>
