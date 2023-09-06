@@ -71,7 +71,7 @@ function SwapCard() {
 
   const [gasPrice, setGasPrice] = useState(null);
 
-  const debouncedValue = useDebounce(tokenOneAmount, '500');
+  const debouncedValue = useDebounce(tokenOneAmount, 500);
 
   const [isSwapLoading, setIsSwapLoading] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
@@ -105,6 +105,22 @@ function SwapCard() {
         console.log(err);
       });
   }, [chain]);
+
+  useEffect(() => {
+    let platformId = chain ? chainAlliases[chain.id] : 'ethereum';
+
+    axios
+      .get(
+        `https://v001.wallet.syntrum.com/wallet/swapAssets/${platformId}?search=${debouncedTokenSearch}`
+      )
+      .then((res) => {
+        console.log(res.data);
+        setTokens(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [debouncedTokenSearch]);
 
   useEffect(() => {
     axios
@@ -156,10 +172,12 @@ function SwapCard() {
   }
 
   const updateTokenList = useCallback(() => {
-    const tempTokenList = tokenWithBalances.filter(tokenInfo => {
-      const searchKeyword = tokenInfo.type === 'coin' ? tokenInfo.platformId : `${tokenInfo.tokenData.name}-${tokenInfo.tokenData.symbol}-${tokenInfo.tokenData.tokenAddress}`;
-      return searchKeyword.toLowerCase().indexOf(debouncedTokenSearch.toLowerCase()) >= 0;
-    });
+    // const tempTokenList = tokenWithBalances.filter(tokenInfo => {
+    //   const searchKeyword = tokenInfo.type === 'coin' ? tokenInfo.platformId : `${tokenInfo.tokenData.name}-${tokenInfo.tokenData.symbol}-${tokenInfo.tokenData.tokenAddress}`;
+    //   return searchKeyword.toLowerCase().indexOf(debouncedTokenSearch.toLowerCase()) >= 0;
+    // });
+    const tempTokenList = tokenWithBalances;
+
     if (!tokenOne) {
       if (tempTokenList.length > 1) {
         setTokenOne(tempTokenList[0]);
@@ -176,11 +194,11 @@ function SwapCard() {
     }
 
     updateTokenLists(tempTokenList, tokenOne, tokenTwo);
-  }, [debouncedTokenSearch, tokenWithBalances])
+  }, [tokenWithBalances])
 
   useEffect(() => {
     updateTokenList();
-  }, [debouncedTokenSearch, tokenWithBalances, updateTokenList])
+  }, [tokenWithBalances, updateTokenList])
 
   const handleSettingsSave = () => {
     setIsSettingsModalOpen(false);
