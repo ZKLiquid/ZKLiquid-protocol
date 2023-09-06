@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import clsx from 'clsx';
 
 import { bridge } from '@/constant/globalConstants';
@@ -11,13 +12,18 @@ import { useMediaQuery } from 'usehooks-ts';
 
 function Trade() {
   const isMd = useMediaQuery('(min-width: 768px)');
+  const [selectedToken, setSelectedToken] = useState(null);
+
+  const handleTokenSelect = (token) => {
+    setSelectedToken(token);
+  }
 
   return (
     <>
       <div className="text-white">
         <h1 className="heading-primary">DEX Aggregator</h1>
 
-        <div className="flex overflow-auto flex-shrink-0 scroll-track-hide gap-4 mt-8">
+        <div className="flex flex-shrink-0 gap-4 mt-8 overflow-auto scroll-track-hide">
           {bridge.map(({ icon, name, price, id }, index) => (
             <div
               key={index}
@@ -26,8 +32,8 @@ function Trade() {
               <img src={icon} alt="" />
               <div>
                 <p className="text-[#6D7A86] text-sm font-medium">{name}</p>
-                <div className="flex gap-2 items-end mt-1">
-                  <p className="font-semibold text-base leading-5">{price}</p>
+                <div className="flex items-end gap-2 mt-1">
+                  <p className="text-base font-semibold leading-5">{price}</p>
                   <p className="text-xs text-[#34D399] font-bold">{id}</p>
                 </div>
               </div>
@@ -35,7 +41,7 @@ function Trade() {
           ))}
         </div>
 
-        <div className="md:flex flex-wrap md:flex-nowrap items-center bg-dark-400 gap-4 rounded-2xl mt-5 p-4 lg:pl-6 mb-6">
+        <div className="flex-wrap items-center gap-4 p-4 mt-5 mb-6 md:flex md:flex-nowrap bg-dark-400 rounded-2xl lg:pl-6">
           <svg
             className="flex-shrink-0"
             xmlns="http://www.w3.org/2000/svg"
@@ -84,9 +90,9 @@ function Trade() {
               </a>
             </p>
           </div>
-          <div className="bg-gradient_custom h-full flex-shrink-0 p-4 rounded-xl mt-4 md:mt-0">
+          <div className="flex-shrink-0 h-full p-4 mt-4 bg-gradient_custom rounded-xl md:mt-0">
             <p className="text-sm font-bold">Add Bridge Liquidity</p>
-            <p className="text-sm font-bold mt-5">
+            <p className="mt-5 text-sm font-bold">
               Up to{' '}
               <span className="text-[#33ED8D] text-[34px] font-bold">
                 78.0%
@@ -96,9 +102,9 @@ function Trade() {
         </div>
 
         {isMd ? (
-          <div className="grid grid-cols-2 gap-6 items-start">
-            <TopTokensList />
-            <SwapCard />
+          <div className="grid items-start grid-cols-2 gap-6">
+            <TopTokensList onTokenSelect={handleTokenSelect} />
+            <SwapCard selectedToken={selectedToken} />
           </div>
         ) : (
           <Tab.Group>
@@ -128,10 +134,10 @@ function Trade() {
             </Tab.List>
             <Tab.Panels className="mt-4">
               <Tab.Panel>
-                <SwapCard />
+                <SwapCard selectedToken={selectedToken} />
               </Tab.Panel>
               <Tab.Panel>
-                <TopTokensList />
+                <TopTokensList onTokenSelect={handleTokenSelect} />
               </Tab.Panel>
             </Tab.Panels>
           </Tab.Group>
