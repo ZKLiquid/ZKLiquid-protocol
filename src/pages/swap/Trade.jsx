@@ -136,7 +136,7 @@ function Trade() {
               trade gets the best rate
               <a
                 className="bg-clip-text bg-gradient-to-r ml-2 text-transparent from-[#4DFFDF] to-[#4DA1FF]"
-                href="#"
+                href="https://docs.syntrum.com/key-products/syntrum-dex-aggregator"
                 target="_blank"
               >
                 Learn more about Syntrum DEX Aggregator
