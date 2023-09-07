@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
 
+import { WagmiContext } from '../context/WagmiContext';
 import { NETWORK_COINS } from '@/constant/globalConstants';
 import SearchBar from '@/components/SearchBar';
 
@@ -16,6 +17,7 @@ const chainAlliases = {
 };
 
 function TopTokensList({ onTokenSelect }) {
+  const { isConnected } = useContext(WagmiContext);
   const { chain } = useNetwork();
   const [tokens, setTokens] = useState([]);
   const [tokensWithPrice, setTokensWithPrice] = useState([]);
@@ -46,7 +48,7 @@ function TopTokensList({ onTokenSelect }) {
     const million = Math.floor(number / 1000000);
     const decimal = Math.round((number % 1000000) / 100000);
     
-    return `${million}.${decimal}M`;
+    return `${million.toLocaleString()}.${decimal}M`;
   }
 
   function shortenAddress(address) {
@@ -160,7 +162,7 @@ function TopTokensList({ onTokenSelect }) {
                     {row?.type === 'coin' ? NETWORK_COINS[row?.platformId].symbol : `${row?.tokenData.symbol}`}
                 </td>
                 <td className="text-right">
-                ${formatBalance(row?.priceData['usd'], 4)}
+                  ${formatBalance(row?.priceData['usd'], 4)}
                 </td>
                 <td className="text-right">
                   {formatNumberToMillion(row?.priceData['usd_24h_vol'])}
@@ -174,7 +176,7 @@ function TopTokensList({ onTokenSelect }) {
                   ) : (
                     <>
                       {shortenAddress(row?.tokenData.tokenAddress)}
-                      <a href={`${NETWORK_COINS[chainAlliases[chain?.id]].explorer}address/${row?.tokenData.tokenAddress}`} target='_blank' className='ml-1 text-[#4C9BE8]'>
+                      <a href={isConnected ? `${NETWORK_COINS[chainAlliases[chain?.id]]?.explorer}address/${row?.tokenData.tokenAddress}` : `https://etherscan.io/address/${row?.tokenData.tokenAddress}`} target='_blank' className='ml-1 text-[#4C9BE8]'>
                         <FontAwesomeIcon icon={faExternalLinkAlt} />
                       </a>
                     </>
