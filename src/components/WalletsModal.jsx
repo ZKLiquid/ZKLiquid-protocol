@@ -10,8 +10,15 @@ function WalletsModal({ isOpen, onClose }) {
     useContext(WagmiContext);
 
   const connectHandler = (connector) => {
-    connect({ connector });
-    onClose();
+    if (!connector.ready) {
+      if (connector.id === 'metaMask') {
+        window.open('https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn', '_blank');
+      }
+      onClose();
+    } else {
+      connect({ connector });
+      onClose();
+    }   
   };
 
   useEffect(() => {
@@ -25,10 +32,10 @@ function WalletsModal({ isOpen, onClose }) {
       <div className="space-y-3">
         {connectors.map((connector) => (
           <button
-            disabled={!connector.ready}
+            // disabled={!connector.ready}
             key={connector.id}
             onClick={() => connectHandler(connector)}
-            className="flex w-full text-left items-center gap-2 px-3 py-2  bg-dark-300 rounded-lg hover:bg-opacity-60"
+            className="flex items-center w-full gap-2 px-3 py-2 text-left rounded-lg bg-dark-300 hover:bg-opacity-60"
           >
             <img
               className="w-12 h-12"
@@ -36,7 +43,7 @@ function WalletsModal({ isOpen, onClose }) {
               alt=""
             />
             {connector.name}
-            {!connector.ready && ' (unsupported)'}
+            {!connector.ready && ' install required!'}
             {connectLoading &&
               connector.id === connectPending?.id &&
               ' (connecting)'}

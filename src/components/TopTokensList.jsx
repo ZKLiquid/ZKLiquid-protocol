@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
 import axios from 'axios';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
 
 import { NETWORK_COINS } from '@/constant/globalConstants';
 import SearchBar from '@/components/SearchBar';
@@ -16,6 +18,7 @@ const chainAlliases = {
 function TopTokensList({ onTokenSelect }) {
   const { chain } = useNetwork();
   const [tokens, setTokens] = useState([]);
+  const [tokensWithPrice, setTokensWithPrice] = useState([]);
   const [keyword, setKeyword] = useState('');
 
   const handleTokenClick = (token) => {
@@ -24,6 +27,30 @@ function TopTokensList({ onTokenSelect }) {
 
   const onChangeKeyword = (keyword) => {
     setKeyword(keyword);
+  }
+
+  const formatBalance = (number, decimal) => {
+    if(number == undefined) {
+      return number;
+    }
+
+    const decimals = number.toString().split(".")[1];
+    if (decimals && decimals.length >= decimal) {
+      return Number(number).toFixed(decimal);
+    } else {
+      return number.toString();
+    }
+  }
+
+  function formatNumberToMillion(number) {
+    const million = Math.floor(number / 1000000);
+    const decimal = Math.round((number % 1000000) / 100000);
+    
+    return `${million}.${decimal}M`;
+  }
+
+  function shortenAddress(address) {
+    return address.slice(0, 8) + '...';
   }
 
   useEffect(() => {
@@ -41,6 +68,32 @@ function TopTokensList({ onTokenSelect }) {
         console.log(err);
       });
   }, [chain, keyword]);
+
+  useEffect(() => {
+    const getTokensWithPrice = async () => {
+      const platformId = chain ? chainAlliases[chain.id] : 'ethereum';
+      
+      const updatedTokens = await Promise.all(
+        tokens.map(async (token) => {
+          if (token.type === 'token') {
+            const priceData = await axios.get(`https://v001.wallet.syntrum.com/wallet/tokenPrices/${platformId}?contract_addresses=${token.tokenData.tokenAddress}&vs_currencies=usd`);
+
+            return { ...token, priceData: priceData.data[token.tokenData.tokenAddress] };
+          } else {
+            const priceData = await axios.get(`https://v001.wallet.syntrum.com/wallet/coinPrices/?platform_ids=${platformId}&vs_currencies=usd`);
+
+            return { ...token, priceData: priceData.data[platformId] };
+          }
+        })
+      );
+
+      setTokensWithPrice(updatedTokens);
+    }
+
+    if(tokens.length > 0) {
+      getTokensWithPrice();
+    }
+  }, [tokens])
 
   return (
     <div className="pt-10">
@@ -79,13 +132,16 @@ function TopTokensList({ onTokenSelect }) {
               <th scope="col" className="text-right">
                 Price Change
               </th>
+              <th scope="col" className="text-right">
+                View On Explorer
+              </th>
             </tr>
           </thead>
 
           <tbody className="text-[#D6D7D9] font-bold py-4 text-[14px] whitespace-nowrap">
-            {tokens.slice(0, 10).map((row, index) => (
-              <tr key={index} className="border-b-[2px] border-[#20212C]">
-                <td className="py-4 flex items-center gap-2 text-[14px] cursor-pointer hover:text-[#23DB9F]" onClick={() => handleTokenClick(row)}>
+            {tokensWithPrice.slice(0, 10).map((row, index) => (
+              <tr key={index} className="border-b-[2px] border-[#20212C] cursor-pointer hover:bg-dark-300" onClick={() => handleTokenClick(row)}>
+                <td className="py-4 flex items-center gap-2 text-[14px]">
                   {row?.type === 'coin' ? (
                     <img
                       className="flex-shrink-0 w-6 h-6 mr-2 overflow-hidden rounded-full"
@@ -101,23 +157,28 @@ function TopTokensList({ onTokenSelect }) {
                       alt=""
                     />
                   )}
-                  <div className='max-w-[250px]'>
-                    <p className='overflow-hidden text-ellipsis whitespace-nowrap'>
-                      {row?.type === 'coin' ? NETWORK_COINS[row?.platformId].symbol : `${row?.tokenData.name} (${row?.tokenData.symbol})`}
-                    </p>
-                  </div>
+                    {row?.type === 'coin' ? NETWORK_COINS[row?.platformId].symbol : `${row?.tokenData.symbol}`}
                 </td>
                 <td className="text-right">
-                  {/* <p>{row.price}</p> */}
-                  <p>10.4</p>
+                ${formatBalance(row?.priceData['usd'], 4)}
                 </td>
                 <td className="text-right">
-                  {/* <p>{row.volume}</p> */}
-                  <p>20M</p>
+                  {formatNumberToMillion(row?.priceData['usd_24h_vol'])}
                 </td>
-                <td className="text-right text-[#23DB9F]">
-                  {/* {row.priceChange} */}
-                  0.52%
+                <td className={`text-right ${row?.priceData['usd_24h_change'] > 0 ? 'text-[#23DB9F]' : 'text-[#FB4848]'}`}>
+                  {Number(row?.priceData['usd_24h_change']).toFixed(2)}%
+                </td>
+                <td className='text-right'>
+                  {row?.type === 'coin' ? (
+                    NETWORK_COINS[row?.platformId].symbol + ' coin'
+                  ) : (
+                    <>
+                      {shortenAddress(row?.tokenData.tokenAddress)}
+                      <a href={`${NETWORK_COINS[chainAlliases[chain?.id]].explorer}address/${row?.tokenData.tokenAddress}`} target='_blank' className='ml-1 text-[#4C9BE8]'>
+                        <FontAwesomeIcon icon={faExternalLinkAlt} />
+                      </a>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

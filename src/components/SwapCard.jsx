@@ -77,6 +77,8 @@ function SwapCard({ selectedToken }) {
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isSwapAvailable, setIsSwapAvailable] = useState(false);
 
+  const [errorMessage, setErrorMessage] = useState('Swap');
+
   const [approveHash, setApproveHash] = useState('');
 
   useEffect(() => {
@@ -145,6 +147,8 @@ function SwapCard({ selectedToken }) {
   }, []);
 
   const updateTokenLists = (tempTokenList, tokenOne, tokenTwo) => {
+    tempTokenList.sort((a, b) => parseFloat(b.balance) - parseFloat(a.balance));
+
     if(tokenTwo?.type === 'coin') {
       const filteredList = tempTokenList.filter((item) => {
         return !(item.type === 'coin' && item.platformId === tokenTwo?.platformId);
@@ -270,37 +274,37 @@ function SwapCard({ selectedToken }) {
 
     setIsSwapLoading(true);
 
-    if (tokenOne.type === 'coin') {
+    if (tokenOne?.type === 'coin') {
       tokenOneProp = {
         from: {
-          type: tokenOne.type,
+          type: tokenOne?.type,
           amount: amount,
         },
       };
     } else {
       tokenOneProp = {
         from: {
-          type: tokenOne.type,
+          type: tokenOne?.type,
           amount: amount,
           tokenData: {
-            tokenAddress: tokenOne.tokenData.tokenAddress,
+            tokenAddress: tokenOne?.tokenData.tokenAddress,
           },
         },
       };
     }
 
-    if (tokenTwo.type === 'coin') {
+    if (tokenTwo?.type === 'coin') {
       tokenTwoProp = {
         to: {
-          type: tokenTwo.type,
+          type: tokenTwo?.type,
         },
       };
     } else {
       tokenTwoProp = {
         to: {
-          type: tokenTwo.type,
+          type: tokenTwo?.type,
           tokenData: {
-            tokenAddress: tokenTwo.tokenData.tokenAddress,
+            tokenAddress: tokenTwo?.tokenData.tokenAddress,
           },
         },
       };
@@ -322,14 +326,17 @@ function SwapCard({ selectedToken }) {
           if (!response.data.length) {
             setIsSwapLoading(false);
             setIsSwapAvailable(false);
-            return toast.error('No DEXs found');
+            setErrorMessage('No DEXs found');
+            return;
           }
 
           let isAvailable = true;
 
           if (response.data[0].success === false) {
             isAvailable = false;
-            toast.error(response.data[0].reason);
+
+            setErrorMessage('Insufficient balance');
+            // toast.error(response.data[0].reason);
           }
 
           setDEXs(response.data);
@@ -406,14 +413,15 @@ function SwapCard({ selectedToken }) {
           if (!response.data.length) {
             setIsSwapLoading(false);
             setIsSwapAvailable(false);
-            return toast.error('No DEXs found');
+            setErrorMessage('No DEXs found');
+            return;
           }
 
           let isAvailable = true;
 
           if (response.data[0].success === false) {
             isAvailable = false;
-            toast.error(response.data[0].reason);
+            setErrorMessage('Insufficient balance');
           }
 
           setDEXs(response.data);
@@ -430,14 +438,14 @@ function SwapCard({ selectedToken }) {
       );
   };
 
-  const formatBalance = (number) => {
+  const formatBalance = (number, decimal) => {
     if(number == undefined) {
       return number;
     }
 
     const decimals = number.toString().split(".")[1];
-    if (decimals && decimals.length >= 8) {
-      return Number(number).toFixed(8);
+    if (decimals && decimals.length >= decimal) {
+      return Number(number).toFixed(decimal);
     } else {
       return number.toString();
     }
@@ -479,7 +487,14 @@ function SwapCard({ selectedToken }) {
   useEffect(() => {
     if (isApproveSuccess) {
       setSelectedDEX(prevState => ({ ...prevState, needApprove: false }));
-      toast.success('Approved!');
+
+      toast.success(
+        '<span>View on BSCscan: 0x758717... <a href="#">click here</a></span>',
+        {
+          title: 'Approval successful',
+        }
+      );
+
       setIsActionLoading(false);
     }
   }, [isApproveSuccess]);
@@ -546,7 +561,7 @@ function SwapCard({ selectedToken }) {
       setTokenBalances(updatedTokens);
     }
 
-    if (tokens.length > 1) {
+    if (tokens.length > 0) {
       fetchWalletBalance();
     }
   }, [chain, tokens])
@@ -571,7 +586,7 @@ function SwapCard({ selectedToken }) {
               type="number"
               className="w-full text-xl font-bold text-white bg-transparent border-0 outline-none md:text-3xl placeholder:text-dark-200"
               placeholder="0.00"
-              value={formatBalance(tokenOneAmount)}
+              value={formatBalance(tokenOneAmount, 8)}
               onChange={changeAmountHandler}
             />
             <button
@@ -617,7 +632,7 @@ function SwapCard({ selectedToken }) {
             )}
             {balance && (
               <p className="text-xs font-medium md:text-sm text-dark-100">
-                Your {balance?.symbol} balance: {formatBalance(balance?.formatted)}
+                Your {balance?.symbol} balance: {formatBalance(balance?.formatted, 8)}
               </p>
             )}
           </div>
@@ -640,7 +655,7 @@ function SwapCard({ selectedToken }) {
               className="w-full text-xl font-bold text-white bg-transparent border-0 outline-none md:text-3xl placeholder:text-dark-200"
               placeholder="0.00"
               // disabled={true}
-              value={formatBalance(tokenTwoAmount)}
+              value={formatBalance(tokenTwoAmount, 8)}
               onChange={(e) => getEstimatedSwapData(e.target.value)}
             />
               {/* {tokenOneAmount ? (
@@ -725,7 +740,7 @@ function SwapCard({ selectedToken }) {
                           }`}
                         >
                           <span className="text-sm font-bold ">
-                            Via {dex.name}
+                            {dex.name}
                           </span>
                         </div>
 
@@ -737,10 +752,10 @@ function SwapCard({ selectedToken }) {
                           }`}
                         >
                           <p className={`text-xl font-medium`}>
-                            {formatBalance(dex.toAmount)}
+                            {formatBalance(dex.toAmount, 8)}
                           </p>
                           <p className="text-sm font-medium">
-                            Est fee: {formatBalance(dex.feeAmount)}
+                            Est fee: {formatBalance(dex.feeAmount, 4)} {NETWORK_COINS[chainAlliases[chain?.id]].symbol}
                           </p>
                         </div>
                       </>
@@ -792,7 +807,7 @@ function SwapCard({ selectedToken }) {
               </Button>
             ) : (
               <Button onClick={handleTrx} disabled={true}>
-                Swap
+                {errorMessage}
               </Button>
             )
           ) : (
@@ -833,7 +848,7 @@ function SwapCard({ selectedToken }) {
                     <div className='text-sm text-gray-400'>{NETWORK_COINS[token.platformId].name}</div>
                   </div>
                   <p className="flex-shrink-0 -mr-1 text-white">
-                    {formatBalance(token.balance)}
+                    {formatBalance(token.balance, 8)}
                   </p>
                 </button>
               ) : (
@@ -854,7 +869,7 @@ function SwapCard({ selectedToken }) {
                     <div className='text-sm text-gray-400'>{token.tokenData.name}</div>
                   </div>
                   <p className="flex-shrink-0 -mr-1 text-white">
-                    {formatBalance(token.balance)}
+                    {formatBalance(token.balance, 8)}
                   </p>
                 </button>
               )
@@ -878,7 +893,7 @@ function SwapCard({ selectedToken }) {
                     <div className='text-sm text-gray-400'>{NETWORK_COINS[token.platformId].name}</div>
                   </div>
                   <p className="flex-shrink-0 -mr-1 text-white">
-                    {formatBalance(token.balance)}
+                    {formatBalance(token.balance, 8)}
                   </p>
                 </button>
               ) : (
@@ -899,7 +914,7 @@ function SwapCard({ selectedToken }) {
                     <div className='text-sm text-gray-400'>{token.tokenData.name}</div>
                   </div>
                   <p className="flex-shrink-0 -mr-1 text-white">
-                    {formatBalance(token.balance)}
+                    {formatBalance(token.balance, 8)}
                   </p>
                 </button>
               )
