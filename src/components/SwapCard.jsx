@@ -124,8 +124,16 @@ function SwapCard({ selectedToken }) {
   }, [debouncedTokenSearch]);
 
   useEffect(() => {
-    setTokenOne(selectedToken);
-  }, [selectedToken])
+    if (selectedToken?.type !== tokenTwo?.type) {
+      setTokenOne(selectedToken);
+    } else {
+      if (selectedToken?.type === 'token') {
+        if (selectedToken?.tokenData.tokenAddress !== tokenTwo?.tokenData.tokenAddress) {
+          setTokenOne(selectedToken);
+        }
+      }
+    }
+  }, [selectedToken]);
 
   useEffect(() => {
     axios
@@ -564,7 +572,11 @@ function SwapCard({ selectedToken }) {
     if (tokens.length > 0) {
       fetchWalletBalance();
     }
-  }, [chain, tokens])
+  }, [chain, tokens]);
+
+  useEffect(() => {
+    updateTokenLists(tokenWithBalances, tokenOne, tokenTwo);
+  }, [tokenOne, tokenTwo])
 
   return (
     <>
