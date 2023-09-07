@@ -11,19 +11,22 @@ export const NETWORK_COINS = {
     platformId: 1,
     name: 'Ethereum Token',
     symbol: 'ETH',
-    decimals: 18
+    decimals: 18,
+    explorer: 'https://etherscan.io/'
   },
   'binance-smart-chain': {
     platformId: 56,
     name: 'Binance Chain Native Token',
     symbol: 'BNB',
-    decimals: 18
+    decimals: 18,
+    explorer: 'https://bscscan.com/'
   },
   'matic-network': {
     platformId: 137,
     name: 'MATIC',
     symbol: 'MATIC',
-    decimals: 18
+    decimals: 18,
+    explorer: 'https://polygonscan.com/'
   }
 }
 

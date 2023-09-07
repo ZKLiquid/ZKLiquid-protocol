@@ -19,7 +19,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <ToastContainer
         hideProgressBar
         pauseOnHover={false}
-        position="bottom-right"
+        position="top-right"
         theme="dark"
       />
     </Wagmi>

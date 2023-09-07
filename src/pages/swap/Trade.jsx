@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import clsx from 'clsx';
 
 import { bridge } from '@/constant/globalConstants';
@@ -9,14 +9,31 @@ import TopTokensList from '../../components/TopTokensList';
 import { Tab } from '@headlessui/react';
 
 import { useMediaQuery } from 'usehooks-ts';
+import axios from 'axios';
+
+import bridges from '@/assets/svg/bridge.svg';
+import numbers from '@/assets/svg/number.svg';
+import users from '@/assets/svg/users.svg';
 
 function Trade() {
   const isMd = useMediaQuery('(min-width: 768px)');
   const [selectedToken, setSelectedToken] = useState(null);
+  const [statsInfo, setStatsInfo] = useState(0);
 
   const handleTokenSelect = (token) => {
     setSelectedToken(token);
   }
+
+  useEffect(() => {
+    axios
+      .get('https://v001.wallet.syntrum.com/wallet/getGeneralInfo')
+      .then((res) => {
+        setStatsInfo(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
 
   return (
     <>
@@ -24,21 +41,57 @@ function Trade() {
         <h1 className="heading-primary">DEX Aggregator</h1>
 
         <div className="flex flex-shrink-0 gap-4 mt-8 overflow-auto scroll-track-hide">
-          {bridge.map(({ icon, name, price, id }, index) => (
-            <div
-              key={index}
-              className="inline-flex items-center w-full min-w-[272px] gap-3 bg-dark-400 rounded-xl p-3"
-            >
-              <img src={icon} alt="" />
-              <div>
-                <p className="text-[#6D7A86] text-sm font-medium">{name}</p>
-                <div className="flex items-end gap-2 mt-1">
-                  <p className="text-base font-semibold leading-5">{price}</p>
-                  <p className="text-xs text-[#34D399] font-bold">{id}</p>
-                </div>
+          <div
+            className="inline-flex items-center w-full min-w-[272px] gap-3 bg-dark-400 rounded-xl p-3"
+          >
+            <img src={bridges} alt="" />
+            <div>
+              <p className="text-[#6D7A86] text-sm font-medium">Bridge TVL (USD)</p>
+              <div className="flex items-end gap-2 mt-1">
+                <p className="text-base font-semibold leading-5">$0</p>
+                <p className="text-xs text-[#34D399] font-bold">7d : 0</p>
               </div>
             </div>
-          ))}
+          </div>
+
+          <div
+            className="inline-flex items-center w-full min-w-[272px] gap-3 bg-dark-400 rounded-xl p-3"
+          >
+            <img src={bridges} alt="" />
+            <div>
+              <p className="text-[#6D7A86] text-sm font-medium">Bridge APR</p>
+              <div className="flex items-end gap-2 mt-1">
+                <p className="text-base font-semibold leading-5">$0</p>
+                <p className="text-xs text-[#34D399] font-bold">7d: 0</p>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="inline-flex items-center w-full min-w-[272px] gap-3 bg-dark-400 rounded-xl p-3"
+          >
+            <img src={numbers} alt="" />
+            <div>
+              <p className="text-[#6D7A86] text-sm font-medium">Number of DEXs Integrated</p>
+              <div className="flex items-end gap-2 mt-1">
+                <p className="text-base font-semibold leading-5">{statsInfo.dexesNumber}</p>
+                <p className="text-xs text-[#34D399] font-bold">7d: {statsInfo.dexesNumber7days > 0 ? `+${statsInfo.dexesNumber7days}` : `${statsInfo.dexesNumber7days}`}</p>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="inline-flex items-center w-full min-w-[272px] gap-3 bg-dark-400 rounded-xl p-3"
+          >
+            <img src={users} alt="" />
+            <div>
+              <p className="text-[#6D7A86] text-sm font-medium">Number of Users</p>
+              <div className="flex items-end gap-2 mt-1">
+                <p className="text-base font-semibold leading-5">{statsInfo.uniqueAddresses}</p>
+                <p className="text-xs text-[#34D399] font-bold">7d: {statsInfo.uniqueAddresses7days > 0 ? `+${statsInfo.uniqueAddresses7days}` : `${statsInfo.uniqueAddresses7days}`}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="flex-wrap items-center gap-4 p-4 mt-5 mb-6 md:flex md:flex-nowrap bg-dark-400 rounded-2xl lg:pl-6">
