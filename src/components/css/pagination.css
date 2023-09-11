@@ -1,0 +1,58 @@
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0px 10px;
+}
+
+.pagination li {
+    padding: 20px 20px 0px 20px;
+    position: relative;
+    color: #6B7280;
+}
+
+.pagination li.pagination__link--active {
+    color: white;
+}
+
+.pagination li.pagination__link--active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(126.62deg, #187BD6 -1.75%, #5E3BDD 71.65%);
+}
+
+.pagination .previous {
+    color: white;
+    position: relative;
+}
+
+.pagination .pagination__link--disabled {
+    color: #6B7280 !important;
+}
+
+.previous::before {
+    content: '<--';
+    position: absolute;
+    top: 72%;
+    left: 0;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+}
+
+.pagination .next {
+    color: white;
+    position: relative;
+}
+
+.next::after {
+    content: '-->';
+    position: absolute;
+    top: 72%;
+    right: 0;
+    transform: translate(50%, -50%);
+    font-size: 16px;
+}

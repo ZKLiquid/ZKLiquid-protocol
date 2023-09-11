@@ -4,6 +4,8 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
 
+import ReactPaginate from "react-paginate";
+
 import { WagmiContext } from '../context/WagmiContext';
 import { NETWORK_COINS, chainAlliases } from '@/constant/globalConstants';
 import SearchBar from '@/components/SearchBar';
@@ -11,6 +13,7 @@ import SearchBar from '@/components/SearchBar';
 import { useNetwork } from 'wagmi';
 
 import download from '@/assets/svg/download.svg';
+import './css/pagination.css';
 
 function TopTokensList({ onTokenSelect }) {
   const { address, isConnected } = useContext(WagmiContext);
@@ -20,6 +23,8 @@ function TopTokensList({ onTokenSelect }) {
   const [keyword, setKeyword] = useState('')
   const [isTokenList, setTokenListSelect] = useState(true);
   const [tradeHistory, setTradeHistory] = useState([]);
+  const [tradePages, setTradePages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
 
   const handleTokenClick = (token) => {
     onTokenSelect(token);
@@ -96,6 +101,10 @@ function TopTokensList({ onTokenSelect }) {
     URL.revokeObjectURL(url);
   }
 
+  const handlePageClick = (selectedItem) => {
+    setCurrentPage(selectedItem.selected);
+  };
+
   useEffect(() => {
     const platformId = chain ? chainAlliases[chain.id] : 'ethereum';
     const query = keyword ? `?search=${keyword}` : '';
@@ -117,15 +126,16 @@ function TopTokensList({ onTokenSelect }) {
 
     axios
       .get(
-        `https://v001.wallet.syntrum.com/wallet/swap/tx?platformId=${platformId}&address=${address}`
+        `https://v001.wallet.syntrum.com/wallet/swap/tx?platformId=${platformId}&address=${address}&page=${currentPage + 1}`
       )
       .then((res) => {
         setTradeHistory(res.data.list);
+        setTradePages(res.data.pages);
       })
       .catch((err) => {
         console.log(err);
       });
-  }, [chain, address]);
+  }, [chain, address, currentPage]);
 
   useEffect(() => {
     const getTokensWithPrice = async () => {
@@ -298,6 +308,21 @@ function TopTokensList({ onTokenSelect }) {
                       ))}
                     </tbody>
                   </table>
+                  <ReactPaginate
+                    previousLabel={"Previous"}
+                    nextLabel={"Next"}
+                    pageCount={tradePages}
+                    onPageChange={handlePageClick}
+                    containerClassName={"pagination"}
+                    previousLinkClassName={"pagination__link"}
+                    nextLinkClassName={"pagination__link"}
+                    disabledClassName={"pagination__link--disabled"}
+                    activeClassName={"pagination__link--active"}
+                    initialPage={currentPage}
+                    forcePage={currentPage}
+                    marginPagesDisplayed={1}
+                    pageRangeDisplayed={4}
+                  />
                 </>
               ) : (
                 <div className='text-center pt-[52px] text-[18px]'>
