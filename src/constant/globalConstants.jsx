@@ -6,27 +6,36 @@ import syntrum from '../assets/svg/syntrum coin.svg';
 import tether from '../assets/svg/tether-coin.svg';
 import binance from '../assets/svg/Binance-Coin.svg';
 
+export const chainAlliases = {
+  1: 'ethereum',
+  56: 'binance-smart-chain',
+  137: 'matic-network',
+}
+
 export const NETWORK_COINS = {
   'ethereum': {
     platformId: 1,
     name: 'Ethereum Token',
     symbol: 'ETH',
     decimals: 18,
-    explorer: 'https://etherscan.io/'
+    explorer: 'https://etherscan.io/',
+    scan: 'Etherscan'
   },
   'binance-smart-chain': {
     platformId: 56,
     name: 'Binance Chain Native Token',
     symbol: 'BNB',
     decimals: 18,
-    explorer: 'https://bscscan.com/'
+    explorer: 'https://bscscan.com/',
+    scan: 'BSCscan'
   },
   'matic-network': {
     platformId: 137,
     name: 'MATIC',
     symbol: 'MATIC',
     decimals: 18,
-    explorer: 'https://polygonscan.com/'
+    explorer: 'https://polygonscan.com/',
+    scan: 'Polygonscan'
   }
 }
 
@@ -108,6 +117,69 @@ export const table = [
     volume: '21.21M',
     priceChange: '0.52%',
   },
+];
+
+export const tradeTable = [
+  {
+    date: '09:20:37 19-05-2021',
+    transaction: '10,000.12 USDT -> 63.67 BNB',
+    gas: '0.0045 BNB',
+    transactionId: '0xf51e1932fd587d05982e1b9e6fa9e8b71d1772bc15ce5c7268092ce440801ff7'
+  },
+  {
+    date: '09:20:37 19-05-2021',
+    transaction: '10,000.12 USDT -> 63.67 BNB',
+    gas: '0.0045 BNB',
+    transactionId: '0xf51e1932fd587d05982e1b9e6fa9e8b71d1772bc15ce5c7268092ce440801ff7'
+  },
+  {
+    date: '09:20:37 19-05-2021',
+    transaction: '10,000.12 USDT -> 63.67 BNB',
+    gas: '0.0045 BNB',
+    transactionId: '0xf51e1932fd587d05982e1b9e6fa9e8b71d1772bc15ce5c7268092ce440801ff7'
+  },
+  {
+    date: '09:20:37 19-05-2021',
+    transaction: '10,000.12 USDT -> 63.67 BNB',
+    gas: '0.0045 BNB',
+    transactionId: '0xf51e1932fd587d05982e1b9e6fa9e8b71d1772bc15ce5c7268092ce440801ff7'
+  },
+  {
+    date: '09:20:37 19-05-2021',
+    transaction: '10,000.12 USDT -> 63.67 BNB',
+    gas: '0.0045 BNB',
+    transactionId: '0xf51e1932fd587d05982e1b9e6fa9e8b71d1772bc15ce5c7268092ce440801ff7'
+  },
+  {
+    date: '09:20:37 19-05-2021',
+    transaction: '10,000.12 USDT -> 63.67 BNB',
+    gas: '0.0045 BNB',
+    transactionId: '0xf51e1932fd587d05982e1b9e6fa9e8b71d1772bc15ce5c7268092ce440801ff7'
+  },
+  {
+    date: '09:20:37 19-05-2021',
+    transaction: '10,000.12 USDT -> 63.67 BNB',
+    gas: '0.0045 BNB',
+    transactionId: '0xf51e1932fd587d05982e1b9e6fa9e8b71d1772bc15ce5c7268092ce440801ff7'
+  },
+  {
+    date: '09:20:37 19-05-2021',
+    transaction: '10,000.12 USDT -> 63.67 BNB',
+    gas: '0.0045 BNB',
+    transactionId: '0xf51e1932fd587d05982e1b9e6fa9e8b71d1772bc15ce5c7268092ce440801ff7'
+  },
+  {
+    date: '09:20:37 19-05-2021',
+    transaction: '10,000.12 USDT -> 63.67 BNB',
+    gas: '0.0045 BNB',
+    transactionId: '0xf51e1932fd587d05982e1b9e6fa9e8b71d1772bc15ce5c7268092ce440801ff7'
+  },
+  {
+    date: '09:20:37 19-05-2021',
+    transaction: '10,000.12 USDT -> 63.67 BNB',
+    gas: '0.0045 BNB',
+    transactionId: '0xf51e1932fd587d05982e1b9e6fa9e8b71d1772bc15ce5c7268092ce440801ff7'
+  }
 ];
 
 export const bridge = [

@@ -19,20 +19,24 @@ function Trade() {
   const isMd = useMediaQuery('(min-width: 768px)');
   const [selectedToken, setSelectedToken] = useState(null);
   const [statsInfo, setStatsInfo] = useState(0);
+  const [isGetInfo, setGetInfo] = useState(false);
 
   const handleTokenSelect = (token) => {
     setSelectedToken(token);
   }
 
   useEffect(() => {
-    axios
-      .get('https://v001.wallet.syntrum.com/wallet/getGeneralInfo')
-      .then((res) => {
-        setStatsInfo(res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    if(isGetInfo === false) {
+      axios
+        .get('https://v001.wallet.syntrum.com/wallet/getGeneralInfo')
+        .then((res) => {
+          setStatsInfo(res.data);
+          setGetInfo(true);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
   });
 
   return (
