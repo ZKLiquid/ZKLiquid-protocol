@@ -320,7 +320,7 @@ function TopTokensList({ onTokenSelect }) {
               <img src={download}></img>
               <div className='text-left text-[12px]'>
                 <p>File Type: CSV</p>
-                <p>Download Cost: 0.1 BNB</p>
+                <p>Download Cost: 0.1 {isConnected ? NETWORK_COINS[chainAlliases[chain?.id]].symbol : 'ETH'}</p>
               </div>
               <button className='bg-[#1F3E85] rounded-xl p-3 text-[14px]' onClick={() => downloadFile()}>
                 Download Now
