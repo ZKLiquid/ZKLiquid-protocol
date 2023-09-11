@@ -20,19 +20,15 @@ import { RadioGroup } from '@headlessui/react';
 import axios from 'axios';
 import Button from './Button';
 import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { parseEther } from 'viem';
 import { useDebounce } from 'usehooks-ts';
 
 import { ethers } from 'ethers';
 import WalletsModal from './WalletsModal';
 import { WagmiContext } from '../context/WagmiContext';
-import { NETWORK_COINS } from '../constant/globalConstants';
-
-const chainAlliases = {
-  1: 'ethereum',
-  56: 'binance-smart-chain',
-  137: 'matic-network',
-};
+import { NETWORK_COINS, chainAlliases } from '../constant/globalConstants';
+import SyntrumToast from './SyntrumToast';
 
 function SwapCard({ selectedToken }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -344,7 +340,6 @@ function SwapCard({ selectedToken }) {
             isAvailable = false;
 
             setErrorMessage('Insufficient balance');
-            // toast.error(response.data[0].reason);
           }
 
           setDEXs(response.data);
@@ -476,33 +471,60 @@ function SwapCard({ selectedToken }) {
     value: tokenOne?.type === 'coin' ? parseEther(debouncedValue || '0') : '',
   });
 
-  const { isLoading, isSuccess } = useWaitForTransaction({
+  const { isLoading, isSuccess, data: transactionData } = useWaitForTransaction({
     hash: data?.hash,
   });
 
   useEffect(() => {
     if (isSuccess) {
-      toast.success('Transaction completed');
-      setTokenOneAmount('');
-      setTokenTwoAmount('');
+      const timestamp = new Date().getTime();
+
+      axios
+        .post('https://v001.wallet.syntrum.com/wallet/swap/tx', {
+          platformId: chain ? chainAlliases[chain.id] : 'ethereum',
+          address,
+          txTimestamp: timestamp.toString(),
+          data: {
+            transactionHash: transactionData.transactionHash,
+            status: transactionData.status,
+            fromToken: tokenOne.type === 'coin' ? NETWORK_COINS[tokenOne.platformId].symbol : tokenOne.tokenData.symbol,
+            fromAmount: tokenOneAmount,
+            toToken: tokenTwo.type === 'coin' ? NETWORK_COINS[tokenTwo.platformId].symbol : tokenTwo.tokenData.symbol,
+            toAmount: tokenTwoAmount,
+            gasUsed: ethers.formatUnits(transactionData.gasUsed, 1) * ethers.formatUnits(transactionData.effectiveGasPrice, 18)
+          }
+        })
+        .then((response) => {
+          if(response.data.success) {
+            toast.success(
+              <SyntrumToast title="Transaction successful" platformId={chainAlliases[chain?.id]} transactionId={transactionData.transactionHash} />
+            );
+            setTokenOneAmount('');
+            setTokenTwoAmount('');
+          } else {
+            if (response.data.errors.length > 0) {
+              response.data.errors.forEach((error) => {
+                toast.error(<SyntrumToast title="Transaction error" platformId={chainAlliases[chain?.id]} transactionId={null} content={error} />); 
+              });
+            }
+          }
+        },
+        (error) => {
+          console.log(error);
+        });
     }
   }, [isSuccess]);
 
-  const { isLoading: isApproveLoading, isSuccess: isApproveSuccess } = useWaitForTransaction({
+  const { isLoading: isApproveLoading, isSuccess: isApproveSuccess, data: approveTransactionData } = useWaitForTransaction({
     hash: approveHash,
   });
 
   useEffect(() => {
     if (isApproveSuccess) {
-      setSelectedDEX(prevState => ({ ...prevState, needApprove: false }));
-
       toast.success(
-        '<span>View on BSCscan: 0x758717... <a href="#">click here</a></span>',
-        {
-          title: 'Approval successful',
-        }
+        <SyntrumToast title="Approval successful" platformId={chainAlliases[chain?.id]} transactionId={approveTransactionData.transactionHash} />
       );
-
+      setSelectedDEX(prevState => ({ ...prevState, needApprove: false }));
       setIsActionLoading(false);
     }
   }, [isApproveSuccess]);
@@ -529,7 +551,7 @@ function SwapCard({ selectedToken }) {
 
   useEffect(() => {
     if (!isConnected && tokenOneAmount) {
-      toast.error('Please connect your wallet');
+      toast.error(<SyntrumToast title="Wallet connect" platformId={null} transactionId={null} content="Please connect your wallet!" />);
     }
 
     if (isConnected && tokenOneAmount && parseFloat(tokenOneAmount) > 0) {
@@ -1021,6 +1043,7 @@ function SwapCard({ selectedToken }) {
       </Modal>
 
       <WalletsModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      {/* <ToastContainer /> */}
     </>
   );
 }
