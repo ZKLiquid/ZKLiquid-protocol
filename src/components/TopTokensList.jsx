@@ -230,13 +230,13 @@ function TopTokensList({ onTokenSelect }) {
                       {row?.type === 'coin' ? NETWORK_COINS[row?.platformId].symbol : `${row?.tokenData.symbol}`}
                   </td>
                   <td className="text-right">
-                    ${formatBalance(row?.priceData['usd'], 4)}
+                    {row?.priceData ? `$${formatBalance(row?.priceData['usd'], 4)}` : ''}
                   </td>
                   <td className="text-right">
-                    {formatNumberToMillion(row?.priceData['usd_24h_vol'])}
+                    {row?.priceData ? formatNumberToMillion(row?.priceData['usd_24h_vol']) : ''}
                   </td>
-                  <td className={`text-right ${row?.priceData['usd_24h_change'] > 0 ? 'text-[#23DB9F]' : 'text-[#FB4848]'}`}>
-                    {Number(row?.priceData['usd_24h_change']).toFixed(2)}%
+                  <td className={`text-right ${row?.priceData && row?.priceData['usd_24h_change'] > 0 ? 'text-[#23DB9F]' : 'text-[#FB4848]'}`}>
+                    {row?.priceData ? `${Number(row?.priceData['usd_24h_change']).toFixed(2)}%` : ''}
                   </td>
                   <td className='text-right'>
                     {row?.type === 'coin' ? (
