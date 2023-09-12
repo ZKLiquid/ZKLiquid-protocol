@@ -25,6 +25,9 @@ function TopTokensList({ onTokenSelect }) {
   const [tradeHistory, setTradeHistory] = useState([]);
   const [tradePages, setTradePages] = useState(1);
   const [currentPage, setCurrentPage] = useState(0);
+  const [tokenPages, setTokenPages] = useState(1);
+  const [currentTokenPage, setCurrentTokenPage] = useState(0);
+  const [isLoading, setLoading] = useState(false);
 
   const handleTokenClick = (token) => {
     onTokenSelect(token);
@@ -105,34 +108,43 @@ function TopTokensList({ onTokenSelect }) {
     setCurrentPage(selectedItem.selected);
   };
 
+  const handleClick = (selectedItem) => {
+    setCurrentTokenPage(selectedItem.selected);
+  }
+
   useEffect(() => {
     const platformId = chain ? chainAlliases[chain.id] : 'ethereum';
-    const query = keyword ? `?search=${keyword}` : '';
+    const query = keyword ? `&search=${keyword}` : '';
+    setLoading(true);
 
     axios
       .get(
-        `https://v001.wallet.syntrum.com/wallet/swapAssets/${platformId}${query}`
+        `https://v001.wallet.syntrum.com/wallet/swapAssetsList?platformId=${platformId}${query}&page=${currentTokenPage + 1}`
       )
       .then((res) => {
-        setTokens(res.data);
+        setTokens(res.data.list);
+        setTokenPages(res.data.pages);
       })
       .catch((err) => {
         console.log(err);
       });
-  }, [chain, keyword, address]);
+  }, [chain, keyword, address, currentTokenPage]);
 
   useEffect(() => {
     const platformId = chain ? chainAlliases[chain.id] : 'ethereum';
+    setLoading(true);
 
     axios
       .get(
         `https://v001.wallet.syntrum.com/wallet/swap/tx?platformId=${platformId}&address=${address}&page=${currentPage + 1}`
       )
       .then((res) => {
+        setLoading(false);
         setTradeHistory(res.data.list);
         setTradePages(res.data.pages);
       })
       .catch((err) => {
+        setLoading(false);
         console.log(err);
       });
   }, [chain, address, currentPage]);
@@ -156,6 +168,7 @@ function TopTokensList({ onTokenSelect }) {
       );
 
       setTokensWithPrice(updatedTokens);
+      setLoading(false);
     }
 
     if(tokens.length > 0) {
@@ -197,77 +210,118 @@ function TopTokensList({ onTokenSelect }) {
 
       <div className="px-6 py-1 font-Roboto max-h-[754px] bg-[#191A1F] rounded-xl pb-14">
         {isTokenList ? (
-          <table className="min-w-full mt-2">
-            <thead className="text-[12px] font-bold px-2 py-3 text-[#FFF] capitalize">
-              <tr>
-                <th scope="col" className="text-left">
-                  Token Name
-                </th>
-                <th scope="col" className="text-right">
-                  Price
-                </th>
-                <th scope="col" className="text-right">
-                  Volume (24H)
-                </th>
-                <th scope="col" className="text-right">
-                  Price Change
-                </th>
-                <th scope="col" className="text-right">
-                  View On Explorer
-                </th>
-              </tr>
-            </thead>
-
-            <tbody className="text-[#D6D7D9] font-bold py-4 text-[14px] whitespace-nowrap">
-              {tokensWithPrice.slice(0, 10).map((row, index) => (
-                <tr key={index} className="border-b-[2px] border-[#20212C] cursor-pointer hover:bg-dark-300" onClick={() => handleTokenClick(row)}>
-                  <td className="py-4 flex items-center gap-2 text-[14px]">
-                    {row?.type === 'coin' ? (
-                      <img
-                        className="flex-shrink-0 w-6 h-6 mr-2 overflow-hidden rounded-full"
-                        src={`https://v001.wallet.syntrum.com/images/${row.platformId}/currency/24/icon.png`}
-                        alt=""
-                      />
-                    ) : (
-                      <img
-                        className="flex-shrink-0 w-6 h-6 mr-2 overflow-hidden rounded-full"
-                        src={`https://v001.wallet.syntrum.com/images/${
-                          chain ? chainAlliases[chain.id] : 'ethereum'
-                        }/contract/${row?.tokenData.tokenAddress}/24/icon.png`}
-                        alt=""
-                      />
-                    )}
-                      {row?.type === 'coin' ? NETWORK_COINS[row?.platformId].symbol : `${row?.tokenData.symbol}`}
-                  </td>
-                  <td className="text-right">
-                    {row?.priceData ? `$${formatBalance(row?.priceData['usd'], 4)}` : ''}
-                  </td>
-                  <td className="text-right">
-                    {row?.priceData ? formatNumberToMillion(row?.priceData['usd_24h_vol']) : ''}
-                  </td>
-                  <td className={`text-right ${row?.priceData && row?.priceData['usd_24h_change'] > 0 ? 'text-[#23DB9F]' : 'text-[#FB4848]'}`}>
-                    {row?.priceData ? `${Number(row?.priceData['usd_24h_change']).toFixed(2)}%` : ''}
-                  </td>
-                  <td className='text-right'>
-                    {row?.type === 'coin' ? (
-                      NETWORK_COINS[row?.platformId].symbol + ' coin'
-                    ) : (
-                      <>
-                        {shortenAddress(row?.tokenData.tokenAddress)}
-                        <a href={isConnected ? `${NETWORK_COINS[chainAlliases[chain?.id]]?.explorer}address/${row?.tokenData.tokenAddress}` : `https://etherscan.io/address/${row?.tokenData.tokenAddress}`} target='_blank' className='ml-1 text-[#4C9BE8]'>
-                          <FontAwesomeIcon icon={faExternalLinkAlt} />
-                        </a>
-                      </>
-                    )}
-                  </td>
+          <>
+            <table className="relative min-w-full mt-2">
+              <thead className="text-[12px] font-bold px-2 py-3 text-[#FFF] capitalize">
+                <tr>
+                  <th scope="col" className="text-left">
+                    Token Name
+                  </th>
+                  <th scope="col" className="text-right">
+                    Price
+                  </th>
+                  <th scope="col" className="text-right">
+                    Volume (24H)
+                  </th>
+                  <th scope="col" className="text-right">
+                    Price Change
+                  </th>
+                  <th scope="col" className="text-right">
+                    View On Explorer
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+
+              {isLoading && (
+                <div className="absolute flex items-center justify-center w-full h-full py-8">
+                  <svg
+                    className="mr-3 -ml-1 text-white animate-spin h-9 w-9"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                </div>
+              )}
+              <tbody className={`text-[#D6D7D9] font-bold py-4 text-[14px] whitespace-nowrap ${isLoading && "opacity-30"}`}>
+                {tokensWithPrice.slice(0, 10).map((row, index) => (
+                  <tr key={index} className="border-b-[2px] border-[#20212C] cursor-pointer hover:bg-dark-300" onClick={() => handleTokenClick(row)}>
+                    <td className="py-4 flex items-center gap-2 text-[14px]">
+                      {row?.type === 'coin' ? (
+                        <img
+                          className="flex-shrink-0 w-6 h-6 mr-2 overflow-hidden rounded-full"
+                          src={`https://v001.wallet.syntrum.com/images/${row.platformId}/currency/24/icon.png`}
+                          alt=""
+                        />
+                      ) : (
+                        <img
+                          className="flex-shrink-0 w-6 h-6 mr-2 overflow-hidden rounded-full"
+                          src={`https://v001.wallet.syntrum.com/images/${
+                            chain ? chainAlliases[chain.id] : 'ethereum'
+                          }/contract/${row?.tokenData.tokenAddress}/24/icon.png`}
+                          alt=""
+                        />
+                      )}
+                        {row?.type === 'coin' ? NETWORK_COINS[row?.platformId].symbol : `${row?.tokenData.symbol}`}
+                    </td>
+                    <td className="text-right">
+                      {row?.priceData ? `$${formatBalance(row?.priceData['usd'], 4)}` : ''}
+                    </td>
+                    <td className="text-right">
+                      {row?.priceData ? formatNumberToMillion(row?.priceData['usd_24h_vol']) : ''}
+                    </td>
+                    <td className={`text-right ${row?.priceData && row?.priceData['usd_24h_change'] > 0 ? 'text-[#23DB9F]' : 'text-[#FB4848]'}`}>
+                      {row?.priceData ? `${Number(row?.priceData['usd_24h_change']).toFixed(2)}%` : ''}
+                    </td>
+                    <td className='text-right'>
+                      {row?.type === 'coin' ? (
+                        NETWORK_COINS[row?.platformId].symbol + ' coin'
+                      ) : (
+                        <>
+                          {shortenAddress(row?.tokenData.tokenAddress)}
+                          <a href={isConnected ? `${NETWORK_COINS[chainAlliases[chain?.id]]?.explorer}address/${row?.tokenData.tokenAddress}` : `https://etherscan.io/address/${row?.tokenData.tokenAddress}`} target='_blank' className='ml-1 text-[#4C9BE8]'>
+                            <FontAwesomeIcon icon={faExternalLinkAlt} />
+                          </a>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <ReactPaginate
+              previousLabel={"Previous"}
+              nextLabel={"Next"}
+              pageCount={tokenPages}
+              onPageChange={handleClick}
+              containerClassName={"pagination"}
+              previousLinkClassName={"pagination__link"}
+              nextLinkClassName={"pagination__link"}
+              disabledClassName={"pagination__link--disabled"}
+              activeClassName={"pagination__link--active"}
+              initialPage={currentTokenPage}
+              forcePage={currentTokenPage}
+              marginPagesDisplayed={1}
+              pageRangeDisplayed={4}
+            />
+          </>
         ) : (isConnected ? (
               tradeHistory.length > 0 ? (
                 <>
-                  <table className="min-w-full mt-2">
+                  <table className="relative min-w-full mt-2">
                     <thead className="text-[12px] font-bold px-2 py-3 text-[#FFF] capitalize">
                       <tr>
                         <th scope="col" className="text-left max-w-[100px]">
@@ -286,6 +340,30 @@ function TopTokensList({ onTokenSelect }) {
                       </tr>
                     </thead>
 
+                    {isLoading && (
+                      <div className="absolute flex items-center justify-center w-full h-full py-8">
+                        <svg
+                          className="mr-3 -ml-1 text-white animate-spin h-9 w-9"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                      </div>
+                    )}
                     <tbody className="text-[#D6D7D9] font-bold py-4 text-[14px] whitespace-nowrap">
                       {tradeHistory.map((row, index) => (
                         <tr key={index} className="border-b-[2px] border-[#20212C] cursor-pointer hover:bg-dark-300">
