@@ -356,6 +356,95 @@ function SwapCard({ selectedToken }) {
       );
   };
 
+  const getApprovedSwapData = (dexName) => {
+    let tokenOneProp = null;
+    let tokenTwoProp = null;
+
+    setIsSwapLoading(true);
+
+    if (tokenOne?.type === 'coin') {
+      tokenOneProp = {
+        from: {
+          type: tokenOne?.type,
+          amount: tokenOneAmount,
+        },
+      };
+    } else {
+      tokenOneProp = {
+        from: {
+          type: tokenOne?.type,
+          amount: tokenOneAmount,
+          tokenData: {
+            tokenAddress: tokenOne?.tokenData.tokenAddress,
+          },
+        },
+      };
+    }
+
+    if (tokenTwo?.type === 'coin') {
+      tokenTwoProp = {
+        to: {
+          type: tokenTwo?.type,
+        },
+      };
+    } else {
+      tokenTwoProp = {
+        to: {
+          type: tokenTwo?.type,
+          tokenData: {
+            tokenAddress: tokenTwo?.tokenData.tokenAddress,
+          },
+        },
+      };
+    }
+
+    axios
+      .post('https://v001.wallet.syntrum.com/wallet/getSwapData', {
+        platform: chain ? chainAlliases[chain.id] : 'ethereum',
+        address,
+        ...tokenOneProp,
+        ...tokenTwoProp,
+        advanced: {
+          gasPrice: gasPrice || 0.000000000001,
+          slippageTolerance: tolerance || 0.5,
+        },
+      })
+      .then(
+        (response) => {
+          if (!response.data.length) {
+            setIsSwapLoading(false);
+            setIsSwapAvailable(false);
+            setErrorMessage('No DEXs found');
+            return;
+          }
+
+          let isAvailable = true;
+
+          if (response.data[0].success === false) {
+            isAvailable = false;
+
+            setErrorMessage('Insufficient balance');
+          }
+
+          response.data.forEach((dex) => {
+            if(dex.name === dexName) {
+              dex.needApprove = false;
+              setSelectedDEX(dex);    
+            }
+          });
+
+          setDEXs(response.data);
+          setIsSwapLoading(false);
+
+          isAvailable ? setIsSwapAvailable(true) : setIsSwapAvailable(false);
+        },
+        (error) => {
+          console.log(error);
+          setIsSwapLoading(false);
+        }
+      );
+  };
+
   const getEstimatedSwapData = (amount) => {
     setTokenTwoAmount(amount);
 
@@ -524,7 +613,9 @@ function SwapCard({ selectedToken }) {
       toast.success(
         <SyntrumToast title="Approval successful" platformId={chainAlliases[chain?.id]} transactionId={approveTransactionData.transactionHash} />
       );
-      setSelectedDEX(prevState => ({ ...prevState, needApprove: false }));
+
+      getApprovedSwapData(selectedDEX.name);
+      // setSelectedDEX(prevState => ({ ...prevState, needApprove: false }));
       setIsActionLoading(false);
     }
   }, [isApproveSuccess]);
