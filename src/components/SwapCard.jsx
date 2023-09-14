@@ -339,7 +339,7 @@ function SwapCard({ selectedToken }) {
           if (response.data[0].success === false) {
             isAvailable = false;
 
-            setErrorMessage('Insufficient balance');
+            setErrorMessage('Insufficient balance: swap + fees');
           }
 
           setDEXs(response.data);
