@@ -560,7 +560,7 @@ function SwapCard({ selectedToken }) {
     value: tokenOne?.type === 'coin' ? parseEther(debouncedValue || '0') : '',
   });
 
-  const { isLoading, isSuccess, data: transactionData } = useWaitForTransaction({
+  const { isSuccess, data: transactionData } = useWaitForTransaction({
     hash: data?.hash,
   });
 
@@ -590,7 +590,9 @@ function SwapCard({ selectedToken }) {
             );
             setTokenOneAmount('');
             setTokenTwoAmount('');
+            setIsActionLoading(false);
           } else {
+            setIsActionLoading(false);
             if (response.data.errors.length > 0) {
               response.data.errors.forEach((error) => {
                 toast.error(<SyntrumToast title="Transaction error" platformId={chainAlliases[chain?.id]} transactionId={null} content={error} />); 
@@ -599,12 +601,13 @@ function SwapCard({ selectedToken }) {
           }
         },
         (error) => {
+          setIsActionLoading(false);
           console.log(error);
         });
     }
   }, [isSuccess]);
 
-  const { isLoading: isApproveLoading, isSuccess: isApproveSuccess, data: approveTransactionData } = useWaitForTransaction({
+  const { isSuccess: isApproveSuccess, data: approveTransactionData } = useWaitForTransaction({
     hash: approveHash,
   });
 
@@ -615,17 +618,15 @@ function SwapCard({ selectedToken }) {
       );
 
       getApprovedSwapData(selectedDEX.name);
-      // setSelectedDEX(prevState => ({ ...prevState, needApprove: false }));
       setIsActionLoading(false);
     }
   }, [isApproveSuccess]);
 
   const handleTrx = async () => {
     console.log(selectedDEX);
+    setIsActionLoading(true);
 
     if (selectedDEX?.needApprove) {
-      setIsActionLoading(true);
-
       const config = await prepareWriteContract({
         address: selectedDEX.serviceData.tokenAddress,
         abi: erc20ABI,
@@ -636,6 +637,7 @@ function SwapCard({ selectedToken }) {
       const { hash } = await writeContract(config);
       setApproveHash(hash);
     } else {
+
       sendTransaction?.();
     }
   };
@@ -920,8 +922,8 @@ function SwapCard({ selectedToken }) {
         <div className="mt-6">
           {isConnected ? (
             (parseFloat(tokenOneAmount) > 0 && isSwapAvailable) ? (
-              <Button onClick={handleTrx} disabled={(isLoading || isActionLoading)}>
-                {(isLoading || isActionLoading) ? (
+              <Button onClick={handleTrx} disabled={isActionLoading}>
+                {isActionLoading ? (
                   <>
                     <ClipLoader size={20} color={'#ffffff'} loading={true} className='relative top-[3px]' />
                     <span className="ml-2">Processing...</span>
