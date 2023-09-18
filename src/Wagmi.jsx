@@ -19,12 +19,12 @@ import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [mainnet, polygon, bsc],
   [
+    infuraProvider({ apiKey: 'ac546be7d92f46f5bbd794a14f4fd707' }),
     jsonRpcProvider({
       rpc: (chain) => ({
         http: `https://56.https://bsc-mainnet.core.chainstack.com/ac5a7a79e0bfe4a915f59e3e39ac0f56`,
       }),
     }),
-    infuraProvider({ apiKey: 'ac546be7d92f46f5bbd794a14f4fd707' }),
     publicProvider(),
   ]
 );
