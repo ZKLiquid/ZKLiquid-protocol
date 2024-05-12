@@ -210,32 +210,32 @@ function TopTokensList({ onTokenSelect }) {
         <div className="flex justify-start gap-2 p-1 border-[1px] border-white rounded-full">
           <button
             className={`text-[#FFFFFF] text-[16px] px-[15px] py-[10px] rounded-full font-bold ${
-              isTokenList ? "bg-teal-400 text-black" : "hover:bg-dark-300"
+              isTokenList ? "" : "hover:bg-dark-300"
             }`}
-            // style={
-            //   isTokenList
-            //     ? {
-            //         background:
-            //           "linear-gradient(135.01deg, rgba(31, 247, 253, 0.7) -57.3%, rgba(179, 59, 246, 0.7) 34.9%, rgba(255, 132, 76, 0.7) 101.62%, rgba(255, 132, 75, 0.7) 130.58%)",
-            //       }
-            //     : null
-            // }
+            style={
+              isTokenList
+                ? {
+                    background:
+                      "linear-gradient(135.01deg, rgba(31, 247, 253, 0.7) -57.3%, rgba(179, 59, 246, 0.7) 34.9%, rgba(255, 132, 76, 0.7) 101.62%, rgba(255, 132, 75, 0.7) 130.58%)",
+                  }
+                : null
+            }
             onClick={() => setTokenListSelect(true)}
           >
             Add/Remove Liquidity
           </button>
           <button
             className={`text-[#FFFFFF] text-[16px] px-[15px] py-[10px] rounded-full font-bold ${
-              isTokenList ? "hover:bg-dark-300" : "bg-teal-400 text-black"
+              isTokenList ? "hover:bg-dark-300" : ""
             }`}
-            // style={
-            //   !isTokenList
-            //     ? {
-            //         background:
-            //           "linear-gradient(135.01deg, rgba(31, 247, 253, 0.7) -57.3%, rgba(179, 59, 246, 0.7) 34.9%, rgba(255, 132, 76, 0.7) 101.62%, rgba(255, 132, 75, 0.7) 130.58%)",
-            //       }
-            //     : null
-            // }
+            style={
+              !isTokenList
+                ? {
+                    background:
+                      "linear-gradient(135.01deg, rgba(31, 247, 253, 0.7) -57.3%, rgba(179, 59, 246, 0.7) 34.9%, rgba(255, 132, 76, 0.7) 101.62%, rgba(255, 132, 75, 0.7) 130.58%)",
+                  }
+                : null
+            }
             onClick={() => setTokenListSelect(false)}
           >
             Balance Liquidity
@@ -509,6 +509,34 @@ function TopTokensList({ onTokenSelect }) {
           </div>
         )}
       </div>
+
+      {!isTokenList && isConnected && tradeHistory.length > 0 && (
+        <div className="bg-[#191A1F] py-[10px] mt-[10px] rounded-xl">
+          <div className="mx-auto max-w-[480px]">
+            <p className="text-[18px]">
+              Download your transaction history anytime
+            </p>
+            <div className="flex items-center justify-between gap-[40px] pt-[10px]">
+              <img src={download}></img>
+              <div className="text-left text-[12px]">
+                <p>File Type: CSV</p>
+                <p>
+                  Download Cost: 0.1{" "}
+                  {isConnected
+                    ? NETWORK_COINS[chainAlliases[chain?.id]].symbol
+                    : "ETH"}
+                </p>
+              </div>
+              <button
+                className="bg-[#1F3E85] rounded-xl p-3 text-[14px]"
+                onClick={() => downloadFile()}
+              >
+                Download Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

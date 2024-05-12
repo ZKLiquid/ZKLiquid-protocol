@@ -1,29 +1,29 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from "framer-motion";
 
-import { XMarkIcon } from '@heroicons/react/24/solid';
-import { Link } from 'react-router-dom';
+import { XMarkIcon } from "@heroicons/react/24/solid";
+import { Link } from "react-router-dom";
+import logo from "../../assets/images/ZKLiquidIcon.svg";
 
-import logo from '../../assets/images/logo-syntrum.svg';
-import logoText from '../../assets/images/logo-syntrum-text.svg';
-import { useContext } from 'react';
-import { SidebarContext } from '../../context/SidebarContext';
+import logoText from "../../assets/images/logotext.svg";
+import { useContext } from "react";
+import { SidebarContext } from "../../context/SidebarContext";
 
-import SidebarDropdown from './SidebarDropdown';
-import SidebarLink from './Sidebarlink';
-import clsx from 'clsx';
+import SidebarDropdown from "./SidebarDropdown";
+import SidebarLink from "./Sidebarlink";
+import clsx from "clsx";
 
 const sidebarVariants = {
   open: {
     x: 0,
     transition: {
-      ease: 'easeIn',
+      ease: "easeIn",
       duration: 0.2,
     },
   },
   closed: {
     x: -304,
     transition: {
-      ease: 'easeOut',
+      ease: "easeOut",
       duration: 0.2,
     },
   },
@@ -36,10 +36,10 @@ function Sidebar({ currentPageLinks }) {
     <>
       <motion.aside
         initial={false}
-        animate={isOpen ? 'open' : 'closed'}
+        animate={isOpen ? "open" : "closed"}
         variants={sidebarVariants}
-        className={`bg-dark-500 w-64 h-app fixed z-30 left-0 top-0 md:!translate-x-0 md:transition-all xl:w-64 ${
-          isOpen ? 'md:w-64' : 'md:w-20'
+        className={`bg-[#04131F] w-64 h-app fixed z-30 left-0 top-0 md:!translate-x-0 md:transition-all xl:w-64 ${
+          isOpen ? "md:w-64" : "md:w-20"
         }`}
       >
         <button
@@ -52,19 +52,19 @@ function Sidebar({ currentPageLinks }) {
         <div className="w-full h-full overflow-y-auto overflow-x-clip border-r border-dark-300">
           <Link
             to="/"
-            className="py-5 px-4 flex gap-1 w-full border-b border-dark-300"
+            className="py-5 px-4 flex gap-1 w-full border-b border-dark-300 items-center"
           >
             <img
               className={clsx(
-                'transition-all',
-                isOpen ? 'ml-0' : 'ml-3 xl:ml-0'
+                "transition-all h-[28px] w-auto",
+                isOpen ? "ml-0" : "ml-3 xl:ml-0"
               )}
               src={logo}
               alt=""
             />
             <img
-              className={`transition-opacity ${
-                isOpen ? 'md:opacity-100' : 'md:opacity-0 xl:opacity-100'
+              className={`transition-opacity h-[26px] w-auto ${
+                isOpen ? "md:opacity-100" : "md:opacity-0 xl:opacity-100"
               }`}
               src={logoText}
               alt=""
@@ -73,7 +73,7 @@ function Sidebar({ currentPageLinks }) {
 
           <div className="space-y-2.5 mt-3">
             {currentPageLinks.links.map((link) =>
-              link.hasOwnProperty('children') ? (
+              link.hasOwnProperty("children") ? (
                 <SidebarDropdown link={link} key={link.title} />
               ) : (
                 <SidebarLink link={link} key={link.title} />

@@ -1,12 +1,12 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { Outlet, useLocation, useMatch } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from "react";
+import { Outlet, useLocation, useMatch } from "react-router-dom";
 
-import Sidebar from '../components/Sidebar';
+import Sidebar from "../components/Sidebar";
 
-import Header from '../components/Header';
-import sidebarLinks from '../constant/sidebarLinks.jsx';
-import { SidebarContextProvider } from '../context/SidebarContext';
-import { WagmiContext } from '../context/WagmiContext';
+import Header from "../components/Header";
+import sidebarLinks from "../constant/sidebarLinks.jsx";
+import { SidebarContextProvider } from "../context/SidebarContext";
+import { WagmiContext } from "../context/WagmiContext";
 
 function DashboardLayout() {
   const location = useLocation();
@@ -16,7 +16,7 @@ function DashboardLayout() {
   const [currentPageLinks, setCurrentPageLinks] = useState(sidebarLinks[0]);
 
   useEffect(() => {
-    const currentPath = '/' + location.pathname.split('/')[1];
+    const currentPath = "/" + location.pathname.split("/")[1];
 
     // filter links to get the current page
     const currentLinks = sidebarLinks.find((link) => link.path === currentPath);

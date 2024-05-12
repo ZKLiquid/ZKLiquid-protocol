@@ -8,87 +8,99 @@ import {
   Activity,
   Game,
   Image,
-} from 'iconsax-react';
+  Link2,
+  Data,
+} from "iconsax-react";
 
 export default [
   {
-    title: 'Swap',
-    path: '/swap',
+    title: "Swap",
+    path: "/swap",
     links: [
       {
-        title: 'Trade',
-        icon: <Repeat />,
-        path: '/swap',
+        title: "Liquidity Protocol",
+        icon: <Bubble />,
+        path: "/swap",
       },
       {
-        title: 'Bridge Liquidity',
-        icon: <Bubble />,
-        path: '/swap/bridge',
+        title: "Pool Factory",
+        icon: <Repeat />,
+        path: "/swap/bridge",
       },
+      // {
+      //   title: "Data Link",
+      //   icon: <Data />,
+      //   path: "/swap/bridge",
+      // },
+      // {
+      //   title: "Chain Link",
+      //   icon: <Link2 />,
+      //   path: "/swap/bridge",
+      // },
     ],
   },
   {
-    title: 'DeFi',
-    path: '/defi',
+    title: "DeFi",
+    path: "/defi",
     links: [
       {
-        title: 'Dashboard',
+        title: "Dashboard",
         icon: <Home2 />,
-        path: '/defi',
+        path: "/defi",
       },
       {
-        title: 'SynLend',
+        title: "SynLend",
         icon: <BitcoinRefresh />,
         children: [
           {
-            title: 'Lend',
+            title: "Lend",
             icon: <PercentageCircle />,
-            path: '/defi/lend',
+            path: "/defi/lend",
           },
           {
-            title: 'My Loans',
+            title: "My Loans",
             icon: <EmptyWalletAdd />,
-            path: '/defi/loans',
+            path: "/defi/loans",
           },
         ],
       },
       {
-        title: 'SynMarg',
+        title: "SynMarg",
         icon: <Activity />,
         children: [
           {
-            title: 'MTrade',
+            title: "MTrade",
             icon: <Activity />,
-            path: '/defi/mtrade',
+            path: "/defi/mtrade",
           },
           {
-            title: 'MAbitrage',
+            title: "MAbitrage",
             icon: <Activity />,
-            path: '/defi/mabitrage',
+            path: "/defi/mabitrage",
           },
         ],
       },
     ],
   },
   {
-    title: 'GameFi',
-    path: '/gamefi',
+    title: "GameFi",
+    path: "/gamefi",
     links: [
       {
-        title: 'GameFi link',
+        title: "GameFi link",
         icon: <Game />,
-        path: '/gamefi',
+        path: "/gamefi",
       },
     ],
   },
   {
-    title: 'NFT',
-    path: '/nft',
+    title: "NFT",
+    path: "/nft",
     links: [
       {
-        title: 'Nft link',
+        title: "Nft link",
         icon: <Image />,
-        path: '/nft',
+        path: "/nft",
       },
     ],
   },

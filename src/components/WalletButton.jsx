@@ -1,14 +1,14 @@
-import clsx from 'clsx';
-import { useContext, useState } from 'react';
+import clsx from "clsx";
+import { useContext, useState } from "react";
 
-import { Fragment } from 'react';
-import { Menu, Transition } from '@headlessui/react';
-import CoinSVG from '@/assets/svg/coins.svg';
-import { toast } from 'react-toastify';
+import { Fragment } from "react";
+import { Menu, Transition } from "@headlessui/react";
+import CoinSVG from "@/assets/svg/coins.svg";
+import { toast } from "react-toastify";
 
-import { ArrowDown2, Copy, LogoutCurve } from 'iconsax-react';
-import WalletsModal from './WalletsModal';
-import { WagmiContext } from '../context/WagmiContext';
+import { ArrowDown2, Copy, LogoutCurve } from "iconsax-react";
+import WalletsModal from "./WalletsModal";
+import { WagmiContext } from "../context/WagmiContext";
 
 function WalletButton({ width }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,7 +17,7 @@ function WalletButton({ width }) {
 
   const copyAddress = () => {
     navigator.clipboard.writeText(address);
-    toast.success('Copied to clipboard.');
+    toast.success("Copied to clipboard.");
   };
 
   if (isConnected) {
@@ -25,17 +25,17 @@ function WalletButton({ width }) {
       <Menu
         as="div"
         className={clsx(
-          'relative inline-block text-left',
-          width === 'full' && 'w-full'
+          "relative inline-block text-left",
+          width === "full" && "w-full"
         )}
       >
         {({ open }) => (
           <>
             <Menu.Button
               className={clsx(
-                'flex gap-2 items-center p-1 pr-2.5 rounded-full text-sm font-medium border border-dark-300 transition-colors hover:bg-dark-300',
-                width === 'full' && 'w-full',
-                open ? 'bg-dark-300' : 'bg-dark-400'
+                "flex gap-2 items-center p-1 pr-2.5 rounded-full text-sm font-medium border border-dark-300 transition-colors hover:bg-dark-300",
+                width === "full" && "w-full",
+                open ? "bg-dark-300" : "bg-dark-400"
               )}
             >
               <img src={CoinSVG} className="flex-shrink-0 w-8 h-8" alt="" />
@@ -44,8 +44,8 @@ function WalletButton({ width }) {
                 size="16"
                 color="#fff"
                 className={clsx(
-                  'transition-transform will-change-transform ml-auto',
-                  open && 'rotate-180'
+                  "transition-transform will-change-transform ml-auto",
+                  open && "rotate-180"
                 )}
               />
             </Menu.Button>
@@ -89,8 +89,8 @@ function WalletButton({ width }) {
     <>
       <button
         className={clsx(
-          'flex gap-2 items-center bg-[#2769E4] py-2.5 px-4 rounded-full text-sm font-medium text-center justify-center',
-          width === 'full' && 'w-full'
+          "flex gap-2 items-center text-black font-bold bg-teal-400 py-2.5 px-4 rounded-xl text-sm  text-center justify-center",
+          width === "full" && "w-full"
         )}
         onClick={() => setIsOpen(true)}
       >

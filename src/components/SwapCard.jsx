@@ -1,34 +1,34 @@
-import { useState, useEffect, useContext, useCallback } from 'react';
-import { ArrowDown2, ArrowRight, Repeat, Setting4 } from 'iconsax-react';
+import { useState, useEffect, useContext, useCallback } from "react";
+import { ArrowDown2, ArrowRight, Repeat, Setting4 } from "iconsax-react";
 
-import { ClipLoader } from 'react-spinners';
+import { ClipLoader } from "react-spinners";
 
-import ModalRight from '../common/ModalRight';
+import ModalRight from "../common/ModalRight";
 import {
   erc20ABI,
   useBalance,
   useNetwork,
   useSendTransaction,
   useWaitForTransaction,
-} from 'wagmi';
-import { prepareWriteContract, writeContract } from '@wagmi/core';
-import { fetchBalance } from '@wagmi/core';
+} from "wagmi";
+import { prepareWriteContract, writeContract } from "@wagmi/core";
+import { fetchBalance } from "@wagmi/core";
 
-import Modal from '../common/Modal';
-import clsx from 'clsx';
-import { RadioGroup } from '@headlessui/react';
-import axios from 'axios';
-import Button from './Button';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { parseEther } from 'viem';
-import { useDebounce } from 'usehooks-ts';
+import Modal from "../common/Modal";
+import clsx from "clsx";
+import { RadioGroup } from "@headlessui/react";
+import axios from "axios";
+import Button from "./Button";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { parseEther } from "viem";
+import { useDebounce } from "usehooks-ts";
 
-import { ethers } from 'ethers';
-import WalletsModal from './WalletsModal';
-import { WagmiContext } from '../context/WagmiContext';
-import { NETWORK_COINS, chainAlliases } from '../constant/globalConstants';
-import SyntrumToast from './SyntrumToast';
+import { ethers } from "ethers";
+import WalletsModal from "./WalletsModal";
+import { WagmiContext } from "../context/WagmiContext";
+import { NETWORK_COINS, chainAlliases } from "../constant/globalConstants";
+import SyntrumToast from "./SyntrumToast";
 
 function SwapCard({ selectedToken }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,7 +41,7 @@ function SwapCard({ selectedToken }) {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isTokenToSelected, setTokenToSelected] = useState(false);
 
-  const [tokenSearch, setTokenSearch] = useState('');
+  const [tokenSearch, setTokenSearch] = useState("");
   const debouncedTokenSearch = useDebounce(tokenSearch, 500);
 
   const { chain } = useNetwork();
@@ -52,8 +52,8 @@ function SwapCard({ selectedToken }) {
   const [filteredTokens, setFilteredTokens] = useState([]);
   const [filteredTokensTo, setFilteredTokensTo] = useState([]);
 
-  const [tokenOneAmount, setTokenOneAmount] = useState('');
-  const [tokenTwoAmount, setTokenTwoAmount] = useState('');
+  const [tokenOneAmount, setTokenOneAmount] = useState("");
+  const [tokenTwoAmount, setTokenTwoAmount] = useState("");
 
   const [tokenOne, setTokenOne] = useState(null);
   const [tokenTwo, setTokenTwo] = useState(null);
@@ -73,15 +73,15 @@ function SwapCard({ selectedToken }) {
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isSwapAvailable, setIsSwapAvailable] = useState(false);
 
-  const [errorMessage, setErrorMessage] = useState('Swap');
+  const [errorMessage, setErrorMessage] = useState("Swap");
 
-  const [approveHash, setApproveHash] = useState('');
+  const [approveHash, setApproveHash] = useState("");
 
   useEffect(() => {
     axios
       .get(
         `https://v001.wallet.syntrum.com/wallet/swapAssets/${
-          chain ? chainAlliases[chain.id] : 'ethereum'
+          chain ? chainAlliases[chain.id] : "ethereum"
         }`
       )
       .then((res) => {
@@ -105,7 +105,7 @@ function SwapCard({ selectedToken }) {
   }, [chain]);
 
   useEffect(() => {
-    let platformId = chain ? chainAlliases[chain.id] : 'ethereum';
+    let platformId = chain ? chainAlliases[chain.id] : "ethereum";
 
     axios
       .get(
@@ -123,8 +123,11 @@ function SwapCard({ selectedToken }) {
     if (selectedToken?.type !== tokenTwo?.type) {
       setTokenOne(selectedToken);
     } else {
-      if (selectedToken?.type === 'token') {
-        if (selectedToken?.tokenData.tokenAddress !== tokenTwo?.tokenData.tokenAddress) {
+      if (selectedToken?.type === "token") {
+        if (
+          selectedToken?.tokenData.tokenAddress !==
+          tokenTwo?.tokenData.tokenAddress
+        ) {
           setTokenOne(selectedToken);
         }
       }
@@ -135,7 +138,7 @@ function SwapCard({ selectedToken }) {
     axios
       .get(
         `https://v001.wallet.syntrum.com/wallet/getSwapSettings/${
-          chain ? chainAlliases[chain.id] : 'ethereum'
+          chain ? chainAlliases[chain.id] : "ethereum"
         }`
       )
       .then((res) => {
@@ -153,34 +156,46 @@ function SwapCard({ selectedToken }) {
   const updateTokenLists = (tempTokenList, tokenOne, tokenTwo) => {
     tempTokenList.sort((a, b) => parseFloat(b.balance) - parseFloat(a.balance));
 
-    if(tokenTwo?.type === 'coin') {
+    if (tokenTwo?.type === "coin") {
       const filteredList = tempTokenList.filter((item) => {
-        return !(item.type === 'coin' && item.platformId === tokenTwo?.platformId);
+        return !(
+          item.type === "coin" && item.platformId === tokenTwo?.platformId
+        );
       });
-    
+
       setFilteredTokens(filteredList);
     } else {
       const filteredList = tempTokenList.filter((item) => {
-        return !(item.type === 'token' && item.tokenData.tokenAddress === tokenTwo?.tokenData.tokenAddress && item.tokenData.symbol === tokenTwo?.tokenData.symbol);
+        return !(
+          item.type === "token" &&
+          item.tokenData.tokenAddress === tokenTwo?.tokenData.tokenAddress &&
+          item.tokenData.symbol === tokenTwo?.tokenData.symbol
+        );
       });
-    
+
       setFilteredTokens(filteredList);
     }
 
-    if(tokenOne?.type === 'coin') {
+    if (tokenOne?.type === "coin") {
       const filteredList = tempTokenList.filter((item) => {
-        return !(item.type === 'coin' && item.platformId === tokenOne?.platformId);
+        return !(
+          item.type === "coin" && item.platformId === tokenOne?.platformId
+        );
       });
-    
+
       setFilteredTokensTo(filteredList);
     } else {
       const filteredList = tempTokenList.filter((item) => {
-        return !(item.type === 'token' && item.tokenData.tokenAddress === tokenOne?.tokenData.tokenAddress && item.tokenData.symbol === tokenOne?.tokenData.symbol);
+        return !(
+          item.type === "token" &&
+          item.tokenData.tokenAddress === tokenOne?.tokenData.tokenAddress &&
+          item.tokenData.symbol === tokenOne?.tokenData.symbol
+        );
       });
-    
+
       setFilteredTokensTo(filteredList);
     }
-  }
+  };
 
   const updateTokenList = useCallback(() => {
     // const tempTokenList = tokenWithBalances.filter(tokenInfo => {
@@ -205,11 +220,11 @@ function SwapCard({ selectedToken }) {
     }
 
     updateTokenLists(tempTokenList, tokenOne, tokenTwo);
-  }, [tokenWithBalances])
+  }, [tokenWithBalances]);
 
   useEffect(() => {
     updateTokenList();
-  }, [tokenWithBalances, updateTokenList])
+  }, [tokenWithBalances, updateTokenList]);
 
   const handleSettingsSave = () => {
     setIsSettingsModalOpen(false);
@@ -218,7 +233,7 @@ function SwapCard({ selectedToken }) {
   const { data: balance } = useBalance({
     address,
     token:
-      tokenOne && tokenOne.type === 'token'
+      tokenOne && tokenOne.type === "token"
         ? tokenOne.tokenData.tokenAddress
         : null,
   });
@@ -278,7 +293,7 @@ function SwapCard({ selectedToken }) {
 
     setIsSwapLoading(true);
 
-    if (tokenOne?.type === 'coin') {
+    if (tokenOne?.type === "coin") {
       tokenOneProp = {
         from: {
           type: tokenOne?.type,
@@ -297,7 +312,7 @@ function SwapCard({ selectedToken }) {
       };
     }
 
-    if (tokenTwo?.type === 'coin') {
+    if (tokenTwo?.type === "coin") {
       tokenTwoProp = {
         to: {
           type: tokenTwo?.type,
@@ -315,8 +330,8 @@ function SwapCard({ selectedToken }) {
     }
 
     axios
-      .post('https://v001.wallet.syntrum.com/wallet/getSwapData', {
-        platform: chain ? chainAlliases[chain.id] : 'ethereum',
+      .post("https://v001.wallet.syntrum.com/wallet/getSwapData", {
+        platform: chain ? chainAlliases[chain.id] : "ethereum",
         address,
         ...tokenOneProp,
         ...tokenTwoProp,
@@ -330,7 +345,7 @@ function SwapCard({ selectedToken }) {
           if (!response.data.length) {
             setIsSwapLoading(false);
             setIsSwapAvailable(false);
-            setErrorMessage('No DEXs found');
+            setErrorMessage("No DEXs found");
             return;
           }
 
@@ -339,7 +354,7 @@ function SwapCard({ selectedToken }) {
           if (response.data[0].success === false) {
             isAvailable = false;
 
-            setErrorMessage('Insufficient balance: swap + fees');
+            setErrorMessage("Insufficient balance: swap + fees");
           }
 
           setDEXs(response.data);
@@ -362,7 +377,7 @@ function SwapCard({ selectedToken }) {
 
     setIsSwapLoading(true);
 
-    if (tokenOne?.type === 'coin') {
+    if (tokenOne?.type === "coin") {
       tokenOneProp = {
         from: {
           type: tokenOne?.type,
@@ -381,7 +396,7 @@ function SwapCard({ selectedToken }) {
       };
     }
 
-    if (tokenTwo?.type === 'coin') {
+    if (tokenTwo?.type === "coin") {
       tokenTwoProp = {
         to: {
           type: tokenTwo?.type,
@@ -399,8 +414,8 @@ function SwapCard({ selectedToken }) {
     }
 
     axios
-      .post('https://v001.wallet.syntrum.com/wallet/getSwapData', {
-        platform: chain ? chainAlliases[chain.id] : 'ethereum',
+      .post("https://v001.wallet.syntrum.com/wallet/getSwapData", {
+        platform: chain ? chainAlliases[chain.id] : "ethereum",
         address,
         ...tokenOneProp,
         ...tokenTwoProp,
@@ -414,7 +429,7 @@ function SwapCard({ selectedToken }) {
           if (!response.data.length) {
             setIsSwapLoading(false);
             setIsSwapAvailable(false);
-            setErrorMessage('No DEXs found');
+            setErrorMessage("No DEXs found");
             return;
           }
 
@@ -423,13 +438,13 @@ function SwapCard({ selectedToken }) {
           if (response.data[0].success === false) {
             isAvailable = false;
 
-            setErrorMessage('Insufficient balance');
+            setErrorMessage("Insufficient balance");
           }
 
           response.data.forEach((dex) => {
-            if(dex.name === dexName) {
+            if (dex.name === dexName) {
               dex.needApprove = false;
-              setSelectedDEX(dex);    
+              setSelectedDEX(dex);
             }
           });
 
@@ -453,7 +468,7 @@ function SwapCard({ selectedToken }) {
 
     setIsSwapLoading(true);
 
-    if (tokenOne.type === 'coin') {
+    if (tokenOne.type === "coin") {
       tokenOneProp = {
         from: {
           type: tokenOne.type,
@@ -470,11 +485,11 @@ function SwapCard({ selectedToken }) {
       };
     }
 
-    if (tokenTwo.type === 'coin') {
+    if (tokenTwo.type === "coin") {
       tokenTwoProp = {
         to: {
           type: tokenTwo.type,
-          amount: amount
+          amount: amount,
         },
       };
     } else {
@@ -490,8 +505,8 @@ function SwapCard({ selectedToken }) {
     }
 
     axios
-      .post('https://v001.wallet.syntrum.com/wallet/getSwapData', {
-        platform: chain ? chainAlliases[chain.id] : 'ethereum',
+      .post("https://v001.wallet.syntrum.com/wallet/getSwapData", {
+        platform: chain ? chainAlliases[chain.id] : "ethereum",
         address,
         ...tokenOneProp,
         ...tokenTwoProp,
@@ -505,7 +520,7 @@ function SwapCard({ selectedToken }) {
           if (!response.data.length) {
             setIsSwapLoading(false);
             setIsSwapAvailable(false);
-            setErrorMessage('No DEXs found');
+            setErrorMessage("No DEXs found");
             return;
           }
 
@@ -513,7 +528,7 @@ function SwapCard({ selectedToken }) {
 
           if (response.data[0].success === false) {
             isAvailable = false;
-            setErrorMessage('Insufficient balance');
+            setErrorMessage("Insufficient balance");
           }
 
           setDEXs(response.data);
@@ -531,7 +546,7 @@ function SwapCard({ selectedToken }) {
   };
 
   const formatBalance = (number, decimal) => {
-    if(number == undefined) {
+    if (number == undefined) {
       return number;
     }
 
@@ -541,7 +556,7 @@ function SwapCard({ selectedToken }) {
     } else {
       return number.toString();
     }
-  }
+  };
 
   useEffect(() => {
     if (Number(selectedDEX?.toAmount) !== Number(tokenTwoAmount)) {
@@ -557,7 +572,7 @@ function SwapCard({ selectedToken }) {
     from: address,
     to: selectedDEX?.serviceData?.to,
     data: selectedDEX?.serviceData?.txData,
-    value: tokenOne?.type === 'coin' ? parseEther(debouncedValue || '0') : '',
+    value: tokenOne?.type === "coin" ? parseEther(debouncedValue || "0") : "",
   });
 
   const { isSuccess, data: transactionData } = useWaitForTransaction({
@@ -569,52 +584,78 @@ function SwapCard({ selectedToken }) {
       const timestamp = new Date().getTime();
 
       axios
-        .post('https://v001.wallet.syntrum.com/wallet/swap/tx', {
-          platformId: chain ? chainAlliases[chain.id] : 'ethereum',
+        .post("https://v001.wallet.syntrum.com/wallet/swap/tx", {
+          platformId: chain ? chainAlliases[chain.id] : "ethereum",
           address,
           txTimestamp: timestamp.toString(),
           data: {
             transactionHash: transactionData.transactionHash,
             status: transactionData.status,
-            fromToken: tokenOne.type === 'coin' ? NETWORK_COINS[tokenOne.platformId].symbol : tokenOne.tokenData.symbol,
+            fromToken:
+              tokenOne.type === "coin"
+                ? NETWORK_COINS[tokenOne.platformId].symbol
+                : tokenOne.tokenData.symbol,
             fromAmount: tokenOneAmount,
-            toToken: tokenTwo.type === 'coin' ? NETWORK_COINS[tokenTwo.platformId].symbol : tokenTwo.tokenData.symbol,
+            toToken:
+              tokenTwo.type === "coin"
+                ? NETWORK_COINS[tokenTwo.platformId].symbol
+                : tokenTwo.tokenData.symbol,
             toAmount: tokenTwoAmount,
-            gasUsed: ethers.formatUnits(transactionData.gasUsed, 1) * ethers.formatUnits(transactionData.effectiveGasPrice, 18)
-          }
+            gasUsed:
+              ethers.formatUnits(transactionData.gasUsed, 1) *
+              ethers.formatUnits(transactionData.effectiveGasPrice, 18),
+          },
         })
-        .then((response) => {
-          if(response.data.success) {
-            toast.success(
-              <SyntrumToast title="Transaction successful" platformId={chainAlliases[chain?.id]} transactionId={transactionData.transactionHash} />
-            );
-            setTokenOneAmount('');
-            setTokenTwoAmount('');
-            setIsActionLoading(false);
-          } else {
-            setIsActionLoading(false);
-            if (response.data.errors.length > 0) {
-              response.data.errors.forEach((error) => {
-                toast.error(<SyntrumToast title="Transaction error" platformId={chainAlliases[chain?.id]} transactionId={null} content={error} />); 
-              });
+        .then(
+          (response) => {
+            if (response.data.success) {
+              toast.success(
+                <SyntrumToast
+                  title="Transaction successful"
+                  platformId={chainAlliases[chain?.id]}
+                  transactionId={transactionData.transactionHash}
+                />
+              );
+              setTokenOneAmount("");
+              setTokenTwoAmount("");
+              setIsActionLoading(false);
+            } else {
+              setIsActionLoading(false);
+              if (response.data.errors.length > 0) {
+                response.data.errors.forEach((error) => {
+                  toast.error(
+                    <SyntrumToast
+                      title="Transaction error"
+                      platformId={chainAlliases[chain?.id]}
+                      transactionId={null}
+                      content={error}
+                    />
+                  );
+                });
+              }
             }
+          },
+          (error) => {
+            setIsActionLoading(false);
+            console.log(error);
           }
-        },
-        (error) => {
-          setIsActionLoading(false);
-          console.log(error);
-        });
+        );
     }
   }, [isSuccess]);
 
-  const { isSuccess: isApproveSuccess, data: approveTransactionData } = useWaitForTransaction({
-    hash: approveHash,
-  });
+  const { isSuccess: isApproveSuccess, data: approveTransactionData } =
+    useWaitForTransaction({
+      hash: approveHash,
+    });
 
   useEffect(() => {
     if (isApproveSuccess) {
       toast.success(
-        <SyntrumToast title="Approval successful" platformId={chainAlliases[chain?.id]} transactionId={approveTransactionData.transactionHash} />
+        <SyntrumToast
+          title="Approval successful"
+          platformId={chainAlliases[chain?.id]}
+          transactionId={approveTransactionData.transactionHash}
+        />
       );
 
       getApprovedSwapData(selectedDEX.name);
@@ -630,21 +671,30 @@ function SwapCard({ selectedToken }) {
       const config = await prepareWriteContract({
         address: selectedDEX.serviceData.tokenAddress,
         abi: erc20ABI,
-        functionName: 'approve',
-        args: [selectedDEX.serviceData.to, ethers.parseUnits(selectedDEX.fromAmount)],
+        functionName: "approve",
+        args: [
+          selectedDEX.serviceData.to,
+          ethers.parseUnits(selectedDEX.fromAmount),
+        ],
       });
 
       const { hash } = await writeContract(config);
       setApproveHash(hash);
     } else {
-
       sendTransaction?.();
     }
   };
 
   useEffect(() => {
     if (!isConnected && tokenOneAmount) {
-      toast.error(<SyntrumToast title="Wallet connect" platformId={null} transactionId={null} content="Please connect your wallet!" />);
+      toast.error(
+        <SyntrumToast
+          title="Wallet connect"
+          platformId={null}
+          transactionId={null}
+          content="Please connect your wallet!"
+        />
+      );
     }
 
     if (isConnected && tokenOneAmount && parseFloat(tokenOneAmount) > 0) {
@@ -664,10 +714,10 @@ function SwapCard({ selectedToken }) {
     const fetchWalletBalance = async () => {
       const updatedTokens = await Promise.all(
         tokens.map(async (token) => {
-          if (token.type === 'token') {
+          if (token.type === "token") {
             const balance = await fetchBalance({
               address,
-              token: token.tokenData?.tokenAddress
+              token: token.tokenData?.tokenAddress,
             });
 
             return { ...token, balance: balance.formatted };
@@ -682,7 +732,7 @@ function SwapCard({ selectedToken }) {
       );
 
       setTokenBalances(updatedTokens);
-    }
+    };
 
     if (tokens.length > 0) {
       fetchWalletBalance();
@@ -691,14 +741,14 @@ function SwapCard({ selectedToken }) {
 
   useEffect(() => {
     updateTokenLists(tokenWithBalances, tokenOne, tokenTwo);
-  }, [tokenOne, tokenTwo])
+  }, [tokenOne, tokenTwo]);
 
   return (
     <>
-      <div className="p-4 bg-dark-400 md:p-6 rounded-xl">
+      <div className="p-4 bg-[#04131F]  md:p-6 rounded-xl">
         <div className="grid grid-cols-3">
           <div aria-hidden="true">&nbsp;</div>
-          <h3 className="text-xl font-bold text-center text-2">Swap</h3>
+          <h3 className="text-xl font-bold text-center text-2">Swap/bridge</h3>
           <div className="text-right">
             <button onClick={() => setIsSettingsModalOpen(true)}>
               <Setting4 />
@@ -730,7 +780,7 @@ function SwapCard({ selectedToken }) {
                 className="inline-flex items-center justify-center gap-x-1.5 rounded-lg bg-dark-300 px-3 py-2 text-sm font-semibold text-white shadow-sm  hover:bg-dark-300/50 whitespace-nowrap"
                 onClick={() => openModal(1)}
               >
-                {tokenOne?.type === 'coin' ? (
+                {tokenOne?.type === "coin" ? (
                   <img
                     className="flex-shrink-0 w-6 h-6 mr-2 overflow-hidden rounded-full"
                     src={`https://v001.wallet.syntrum.com/images/${tokenOne.platformId}/currency/24/icon.png`}
@@ -740,13 +790,15 @@ function SwapCard({ selectedToken }) {
                   <img
                     className="flex-shrink-0 w-6 h-6 mr-2 overflow-hidden rounded-full"
                     src={`https://v001.wallet.syntrum.com/images/${
-                      chain ? chainAlliases[chain.id] : 'ethereum'
+                      chain ? chainAlliases[chain.id] : "ethereum"
                     }/contract/${tokenOne?.tokenData.tokenAddress}/24/icon.png`}
                     alt=""
                   />
                 )}
-                {tokenOne?.type === 'coin' ? (
-                  <span className="uppercase">{NETWORK_COINS[tokenOne.platformId].symbol}</span>
+                {tokenOne?.type === "coin" ? (
+                  <span className="uppercase">
+                    {NETWORK_COINS[tokenOne.platformId].symbol}
+                  </span>
                 ) : (
                   <span>{tokenOne?.tokenData.symbol}</span>
                 )}
@@ -759,7 +811,8 @@ function SwapCard({ selectedToken }) {
             )}
             {balance && (
               <p className="text-xs font-medium md:text-sm text-dark-100">
-                Your {balance?.symbol} balance: {formatBalance(balance?.formatted, 8)}
+                Your {balance?.symbol} balance:{" "}
+                {formatBalance(balance?.formatted, 8)}
               </p>
             )}
           </div>
@@ -785,7 +838,7 @@ function SwapCard({ selectedToken }) {
               value={formatBalance(tokenTwoAmount, 8)}
               onChange={(e) => getEstimatedSwapData(e.target.value)}
             />
-              {/* {tokenOneAmount ? (
+            {/* {tokenOneAmount ? (
                 <div>
                   {tokenTwoAmount ? (
                     formatBalance(tokenTwoAmount)
@@ -805,7 +858,7 @@ function SwapCard({ selectedToken }) {
                 className="inline-flex items-center justify-center gap-x-1.5 rounded-lg bg-dark-300 px-3 py-2 text-sm font-semibold text-white shadow-sm  hover:bg-dark-300/50 whitespace-nowrap"
                 onClick={() => openModal(2)}
               >
-                {tokenTwo?.type === 'coin' ? (
+                {tokenTwo?.type === "coin" ? (
                   <img
                     className="flex-shrink-0 w-6 h-6 mr-2 overflow-hidden rounded-full"
                     src={`https://v001.wallet.syntrum.com/images/${tokenTwo.platformId}/currency/24/icon.png`}
@@ -815,13 +868,15 @@ function SwapCard({ selectedToken }) {
                   <img
                     className="flex-shrink-0 w-6 h-6 mr-2 overflow-hidden rounded-full"
                     src={`https://v001.wallet.syntrum.com/images/${
-                      chain ? chainAlliases[chain.id] : 'ethereum'
+                      chain ? chainAlliases[chain.id] : "ethereum"
                     }/contract/${tokenTwo?.tokenData.tokenAddress}/24/icon.png`}
                     alt=""
                   />
                 )}
-                {tokenTwo?.type === 'coin' ? (
-                  <span className="uppercase">{NETWORK_COINS[tokenTwo.platformId].symbol}</span>
+                {tokenTwo?.type === "coin" ? (
+                  <span className="uppercase">
+                    {NETWORK_COINS[tokenTwo.platformId].symbol}
+                  </span>
                 ) : (
                   <span>{tokenTwo?.tokenData.symbol}</span>
                 )}
@@ -847,13 +902,14 @@ function SwapCard({ selectedToken }) {
                       `
                       ${
                         checked
-                          ? 'bg-greenGradient text-black'
-                          : 'bg-dark-300 text-white'
+                          ? "bg-greenGradient text-black"
+                          : "bg-dark-300 text-white"
                       }
                       relative flex cursor-pointer rounded-lg p-5 py-6 shadow-md focus:outline-none ${
-                        (DEXs.length % 2 == 0 && index < 2) || (DEXs.length % 2 == 1 && index < 1)
-                          ? 'lg:col-span-2'
-                          : ''
+                        (DEXs.length % 2 == 0 && index < 2) ||
+                        (DEXs.length % 2 == 1 && index < 1)
+                          ? "lg:col-span-2"
+                          : ""
                       }`
                     }
                   >
@@ -862,27 +918,27 @@ function SwapCard({ selectedToken }) {
                         <div
                           className={`absolute -top-6 left-2 p-2.5 px-3 rounded-lg ${
                             checked
-                              ? 'bg-gradient-light'
-                              : 'bg-dark-400 border border-dark-300'
+                              ? "bg-gradient-light"
+                              : "bg-dark-400 border border-dark-300"
                           }`}
                         >
-                          <span className="text-sm font-bold ">
-                            {dex.name}
-                          </span>
+                          <span className="text-sm font-bold ">{dex.name}</span>
                         </div>
 
                         <div
                           className={`flex w-full justify-between ${
-                            (DEXs.length % 2 == 0 && index < 2) || (DEXs.length % 2 == 1 && index < 1)
-                              ? 'flex-col md:flex-row' 
-                              : 'flex-col'
+                            (DEXs.length % 2 == 0 && index < 2) ||
+                            (DEXs.length % 2 == 1 && index < 1)
+                              ? "flex-col md:flex-row"
+                              : "flex-col"
                           }`}
                         >
                           <p className={`text-xl font-medium`}>
                             {formatBalance(dex.toAmount, 8)}
                           </p>
                           <p className="text-sm font-medium">
-                            Est fee: {formatBalance(dex.feeAmount, 4)} {NETWORK_COINS[chainAlliases[chain?.id]].symbol}
+                            Est fee: {formatBalance(dex.feeAmount, 4)}{" "}
+                            {NETWORK_COINS[chainAlliases[chain?.id]].symbol}
                           </p>
                         </div>
                       </>
@@ -921,15 +977,22 @@ function SwapCard({ selectedToken }) {
 
         <div className="mt-6">
           {isConnected ? (
-            (parseFloat(tokenOneAmount) > 0 && isSwapAvailable) ? (
+            parseFloat(tokenOneAmount) > 0 && isSwapAvailable ? (
               <Button onClick={handleTrx} disabled={isActionLoading}>
                 {isActionLoading ? (
                   <>
-                    <ClipLoader size={20} color={'#ffffff'} loading={true} className='relative top-[3px]' />
+                    <ClipLoader
+                      size={20}
+                      color={"#ffffff"}
+                      loading={true}
+                      className="relative top-[3px]"
+                    />
                     <span className="ml-2">Processing...</span>
                   </>
+                ) : selectedDEX?.needApprove ? (
+                  "Approve"
                 ) : (
-                  selectedDEX?.needApprove ? 'Approve' : 'Swap'
+                  "Swap"
                 )}
               </Button>
             ) : (
@@ -956,97 +1019,107 @@ function SwapCard({ selectedToken }) {
             value={tokenSearch}
             onChange={(e) => setTokenSearch(e.target.value)}
           />
-          {isTokenToSelected ? (
-            filteredTokensTo.length > 0 &&
-            filteredTokensTo.map((token, i) =>
-              token.type === 'coin' ? (
-                <button
-                  key={token.platformId}
-                  className="flex items-center w-full p-2 transition-colors rounded-lg hover:bg-dark-300"
-                  onClick={() => selectToken(i)}
-                >
-                  <img
-                    className="w-6 h-6 mr-2 overflow-hidden rounded-full"
-                    src={`https://v001.wallet.syntrum.com/images/${token.platformId}/currency/24/icon.png`}
-                    alt=""
-                  />
-                  <div className="flex flex-col flex-1 text-left">
-                    <div className='text-base'>{NETWORK_COINS[token.platformId].symbol}</div>
-                    <div className='text-sm text-gray-400'>{NETWORK_COINS[token.platformId].name}</div>
-                  </div>
-                  <p className="flex-shrink-0 -mr-1 text-white">
-                    {formatBalance(token.balance, 8)}
-                  </p>
-                </button>
-              ) : (
-                <button
-                  key={token.tokenData.name}
-                  className="flex items-center w-full p-2 transition-colors rounded-lg hover:bg-dark-300"
-                  onClick={() => selectToken(i)}
-                >
-                  <img
-                    className="w-6 h-6 mr-2 overflow-hidden rounded-full"
-                    src={`https://v001.wallet.syntrum.com/images/${
-                      chain ? chainAlliases[chain.id] : 'ethereum'
-                    }/contract/${token.tokenData.tokenAddress}/24/icon.png`}
-                    alt=""
-                  />
-                  <div className="flex flex-col flex-1 text-left">
-                    <div className='text-base'>{token.tokenData.symbol}</div>
-                    <div className='text-sm text-gray-400'>{token.tokenData.name}</div>
-                  </div>
-                  <p className="flex-shrink-0 -mr-1 text-white">
-                    {formatBalance(token.balance, 8)}
-                  </p>
-                </button>
+          {isTokenToSelected
+            ? filteredTokensTo.length > 0 &&
+              filteredTokensTo.map((token, i) =>
+                token.type === "coin" ? (
+                  <button
+                    key={token.platformId}
+                    className="flex items-center w-full p-2 transition-colors rounded-lg hover:bg-dark-300"
+                    onClick={() => selectToken(i)}
+                  >
+                    <img
+                      className="w-6 h-6 mr-2 overflow-hidden rounded-full"
+                      src={`https://v001.wallet.syntrum.com/images/${token.platformId}/currency/24/icon.png`}
+                      alt=""
+                    />
+                    <div className="flex flex-col flex-1 text-left">
+                      <div className="text-base">
+                        {NETWORK_COINS[token.platformId].symbol}
+                      </div>
+                      <div className="text-sm text-gray-400">
+                        {NETWORK_COINS[token.platformId].name}
+                      </div>
+                    </div>
+                    <p className="flex-shrink-0 -mr-1 text-white">
+                      {formatBalance(token.balance, 8)}
+                    </p>
+                  </button>
+                ) : (
+                  <button
+                    key={token.tokenData.name}
+                    className="flex items-center w-full p-2 transition-colors rounded-lg hover:bg-dark-300"
+                    onClick={() => selectToken(i)}
+                  >
+                    <img
+                      className="w-6 h-6 mr-2 overflow-hidden rounded-full"
+                      src={`https://v001.wallet.syntrum.com/images/${
+                        chain ? chainAlliases[chain.id] : "ethereum"
+                      }/contract/${token.tokenData.tokenAddress}/24/icon.png`}
+                      alt=""
+                    />
+                    <div className="flex flex-col flex-1 text-left">
+                      <div className="text-base">{token.tokenData.symbol}</div>
+                      <div className="text-sm text-gray-400">
+                        {token.tokenData.name}
+                      </div>
+                    </div>
+                    <p className="flex-shrink-0 -mr-1 text-white">
+                      {formatBalance(token.balance, 8)}
+                    </p>
+                  </button>
+                )
               )
-            )
-          ) : (
-            filteredTokens.length > 0 &&
-            filteredTokens.map((token, i) =>
-              token.type === 'coin' ? (
-                <button
-                  key={token.platformId}
-                  className="flex items-center w-full p-2 transition-colors rounded-lg hover:bg-dark-300"
-                  onClick={() => selectToken(i)}
-                >
-                  <img
-                    className="w-6 h-6 mr-2 overflow-hidden rounded-full"
-                    src={`https://v001.wallet.syntrum.com/images/${token.platformId}/currency/24/icon.png`}
-                    alt=""
-                  />
-                  <div className="flex flex-col flex-1 text-left">
-                    <div className='text-base'>{NETWORK_COINS[token.platformId].symbol}</div>
-                    <div className='text-sm text-gray-400'>{NETWORK_COINS[token.platformId].name}</div>
-                  </div>
-                  <p className="flex-shrink-0 -mr-1 text-white">
-                    {formatBalance(token.balance, 8)}
-                  </p>
-                </button>
-              ) : (
-                <button
-                  key={token.tokenData.name}
-                  className="flex items-center w-full p-2 transition-colors rounded-lg hover:bg-dark-300"
-                  onClick={() => selectToken(i)}
-                >
-                  <img
-                    className="w-6 h-6 mr-2 overflow-hidden rounded-full"
-                    src={`https://v001.wallet.syntrum.com/images/${
-                      chain ? chainAlliases[chain.id] : 'ethereum'
-                    }/contract/${token.tokenData.tokenAddress}/24/icon.png`}
-                    alt=""
-                  />
-                  <div className="flex flex-col flex-1 text-left">
-                    <div className='text-base'>{token.tokenData.symbol}</div>
-                    <div className='text-sm text-gray-400'>{token.tokenData.name}</div>
-                  </div>
-                  <p className="flex-shrink-0 -mr-1 text-white">
-                    {formatBalance(token.balance, 8)}
-                  </p>
-                </button>
-              )
-            )
-          )}
+            : filteredTokens.length > 0 &&
+              filteredTokens.map((token, i) =>
+                token.type === "coin" ? (
+                  <button
+                    key={token.platformId}
+                    className="flex items-center w-full p-2 transition-colors rounded-lg hover:bg-dark-300"
+                    onClick={() => selectToken(i)}
+                  >
+                    <img
+                      className="w-6 h-6 mr-2 overflow-hidden rounded-full"
+                      src={`https://v001.wallet.syntrum.com/images/${token.platformId}/currency/24/icon.png`}
+                      alt=""
+                    />
+                    <div className="flex flex-col flex-1 text-left">
+                      <div className="text-base">
+                        {NETWORK_COINS[token.platformId].symbol}
+                      </div>
+                      <div className="text-sm text-gray-400">
+                        {NETWORK_COINS[token.platformId].name}
+                      </div>
+                    </div>
+                    <p className="flex-shrink-0 -mr-1 text-white">
+                      {formatBalance(token.balance, 8)}
+                    </p>
+                  </button>
+                ) : (
+                  <button
+                    key={token.tokenData.name}
+                    className="flex items-center w-full p-2 transition-colors rounded-lg hover:bg-dark-300"
+                    onClick={() => selectToken(i)}
+                  >
+                    <img
+                      className="w-6 h-6 mr-2 overflow-hidden rounded-full"
+                      src={`https://v001.wallet.syntrum.com/images/${
+                        chain ? chainAlliases[chain.id] : "ethereum"
+                      }/contract/${token.tokenData.tokenAddress}/24/icon.png`}
+                      alt=""
+                    />
+                    <div className="flex flex-col flex-1 text-left">
+                      <div className="text-base">{token.tokenData.symbol}</div>
+                      <div className="text-sm text-gray-400">
+                        {token.tokenData.name}
+                      </div>
+                    </div>
+                    <p className="flex-shrink-0 -mr-1 text-white">
+                      {formatBalance(token.balance, 8)}
+                    </p>
+                  </button>
+                )
+              )}
         </div>
       </ModalRight>
 
@@ -1067,15 +1140,15 @@ function SwapCard({ selectedToken }) {
                   value={option}
                   className={({ active, checked }) =>
                     clsx(
-                      active ? 'ring-1 ring-primary ring-offset-1 ' : '',
+                      active ? "ring-1 ring-primary ring-offset-1 " : "",
                       checked
-                        ? 'bg-main text-white'
-                        : 'ring-1 ring-inset ring-dark-300 bg-dark-300 text-white hover:bg-dark-300/50',
-                      'flex items-center justify-center rounded-lg p-2 text-sm font-semibold flex-1 cursor-pointer'
+                        ? "bg-main text-white"
+                        : "ring-1 ring-inset ring-dark-300 bg-dark-300 text-white hover:bg-dark-300/50",
+                      "flex items-center justify-center rounded-lg p-2 text-sm font-semibold flex-1 cursor-pointer"
                     )
                   }
                 >
-                  <RadioGroup.Label as="span">{option + '%'}</RadioGroup.Label>
+                  <RadioGroup.Label as="span">{option + "%"}</RadioGroup.Label>
                 </RadioGroup.Option>
               ))}
           </div>
@@ -1095,11 +1168,11 @@ function SwapCard({ selectedToken }) {
                   value={option.price}
                   className={({ active, checked }) =>
                     clsx(
-                      active ? 'ring-1 ring-primary ring-offset-1 ' : '',
+                      active ? "ring-1 ring-primary ring-offset-1 " : "",
                       checked
-                        ? 'bg-main text-white'
-                        : 'ring-1 ring-inset ring-dark-300 bg-dark-300 text-white hover:bg-dark-300/50',
-                      'flex items-center justify-center rounded-lg p-2 text-sm font-semibold flex-1 cursor-pointer'
+                        ? "bg-main text-white"
+                        : "ring-1 ring-inset ring-dark-300 bg-dark-300 text-white hover:bg-dark-300/50",
+                      "flex items-center justify-center rounded-lg p-2 text-sm font-semibold flex-1 cursor-pointer"
                     )
                   }
                 >
