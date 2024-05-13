@@ -1,7 +1,7 @@
-import React from 'react';
+import React from "react";
 
 function Bridge() {
-  return <h1 className="heading-primary">Bridge</h1>;
+  return <h1 className="heading-primary">Coming soon...</h1>;
 }
 
 export default Bridge;

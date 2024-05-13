@@ -3,20 +3,20 @@ import {
   createRoutesFromElements,
   Route,
   RouterProvider,
-} from 'react-router-dom';
+} from "react-router-dom";
 
-import Dashboard from './pages/defi/Dashboard';
-import DashboardLayout from './layouts/DashboardLayout.jsx';
+import Dashboard from "./pages/defi/Dashboard";
+import DashboardLayout from "./layouts/DashboardLayout.jsx";
 
-import ErrorPage from './layouts/Error.jsx';
-import Home from './pages/Home.jsx';
-import Lend from './pages/defi/Lend';
-import MyLoans from './pages/defi/MyLoans';
-import Gamefi from './pages/gamefi/Gamefi';
-import NFT from './pages/nft/NFT';
+import ErrorPage from "./layouts/Error.jsx";
+import Home from "./pages/Home.jsx";
+import Lend from "./pages/defi/Lend";
+import MyLoans from "./pages/defi/MyLoans";
+import Gamefi from "./pages/gamefi/Gamefi";
+import NFT from "./pages/nft/NFT";
 
-import Trade from './pages/swap/Trade';
-import Bridge from './pages/swap/Bridge';
+import Trade from "./pages/swap/Trade";
+import Bridge from "./pages/swap/Bridge";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
