@@ -37,7 +37,7 @@ function WalletsModal({ isOpen, onClose }) {
               className="w-12 h-12"
               src={
                 connector.name === "WalletConnect"
-                  ? `./walletIcons/WalletConnect.svg`
+                  ? "./walletIcons/coinbaseWallet.svg"
                   : connector.icon
               }
               alt=""
