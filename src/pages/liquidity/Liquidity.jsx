@@ -5,7 +5,7 @@ import { bridge } from "@/constant/globalConstants";
 import NewsLetter from "@/components/NewsLetter";
 
 import SwapCard from "../../components/SwapCard";
-import TopTokensList from "../../components/TopTokensList";
+import TopTokensList from "../../components/TopTokensList2";
 import { Tab } from "@headlessui/react";
 
 import { useMediaQuery } from "usehooks-ts";
@@ -15,10 +15,8 @@ import bridges from "@/assets/svg/bridge.svg";
 import numbers from "@/assets/svg/number.svg";
 import users from "@/assets/svg/users.svg";
 
-function Trade() {
-  const isMd = useMediaQuery("(min-width: 1024px)");
-
-  // const isMd = useMediaQuery("(min-width: 768px)");
+function Liquidity() {
+  const isMd = useMediaQuery("(min-width: 768px)");
   const [selectedToken, setSelectedToken] = useState(null);
   const [statsInfo, setStatsInfo] = useState(0);
   const [isGetInfo, setGetInfo] = useState(false);
@@ -27,12 +25,24 @@ function Trade() {
     setSelectedToken(token);
   };
 
+  useEffect(() => {
+    if (isGetInfo === false) {
+      axios
+        .get("https://v001.wallet.syntrum.com/wallet/getGeneralInfo")
+        .then((res) => {
+          setStatsInfo(res.data);
+          setGetInfo(true);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  });
+
   return (
     <>
       <div className="text-white">
-        <h1 className="heading-primary">
-          Liquidity Protocol (<span className="text-red-300">Testnet</span>){" "}
-        </h1>
+        <h1 className="heading-primary">Liquidity Protocol</h1>
 
         <div className="flex flex-shrink-0 gap-4 mt-8 overflow-auto scroll-track-hide">
           <div className="inline-flex items-center w-full min-w-[272px] gap-3 bg-[#04131F] rounded-xl p-3">
@@ -132,12 +142,12 @@ function Trade() {
 
           <div>
             <h3 className="text-[28px] font-bold mt-4 md:mt-0">
-              EVMs/nonEVMs Bridge
+              EVMs - Soroban Bridge
             </h3>
             <p className="mt-2 text-dark-100">
-              Fast and secure stablecoin bridge, connecting liquidity on siloed
-              blockchains, both EVM and non-EVM. Bridge liquidity pools are
-              going live soon; provide liquidity and earn great yields.
+              Fast and secured stable coins bridge, connecting liquidity from
+              EVM chains to Soroban. Participate by providing bridge liquidity
+              and earn great yield.
               <a
                 className="bg-clip-text bg-gradient-to-r ml-2 text-transparent from-[#4DFFDF] to-[#4DA1FF]"
                 href="https://docs.ZKLiquid.io"
@@ -160,7 +170,7 @@ function Trade() {
         </div>
 
         {isMd ? (
-          <div className="grid items-start grid-cols-2  gap-6">
+          <div className="grid items-start grid-cols-2 gap-6">
             <TopTokensList onTokenSelect={handleTokenSelect} />
             <SwapCard selectedToken={selectedToken} />
           </div>
@@ -207,4 +217,4 @@ function Trade() {
   );
 }
 
-export default Trade;
+export default Liquidity;

@@ -17,6 +17,7 @@ import NFT from "./pages/nft/NFT";
 
 import Trade from "./pages/swap/Trade";
 import Bridge from "./pages/swap/Bridge";
+import Liquidity from "./pages/liquidity/Liquidity";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -25,8 +26,12 @@ const router = createBrowserRouter(
       <Route path="/" element={<DashboardLayout />}>
         <Route path="/swap">
           <Route index element={<Trade />} />
+          <Route path="liquidity" element={<Liquidity />} />
           <Route path="bridge" element={<Bridge />} />
         </Route>
+        {/* <Route path="/liquidity">
+          <Route index element={<Liquidity />} />
+        </Route> */}
         <Route path="/defi">
           <Route index element={<Dashboard />} />
           <Route path="lend" element={<Lend />} />

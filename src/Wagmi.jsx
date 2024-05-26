@@ -1,53 +1,53 @@
-import React from 'react';
+import React from "react";
 
 // wagmi imports
-import { WagmiConfig, createConfig, configureChains } from 'wagmi';
+import { createConfig, http, WagmiProvider } from "wagmi";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import { mainnet, polygon, bsc } from 'wagmi/chains';
+import {
+  sepolia,
+  avalancheFuji,
+  polygonZkEvmCardona,
+  polygonAmoy,
+  baseSepolia,
+} from "wagmi/chains";
 
-import { infuraProvider } from 'wagmi/providers/infura';
-import { publicProvider } from 'wagmi/providers/public';
+import { walletConnect } from "wagmi/connectors";
 
-import { CoinbaseWalletConnector } from 'wagmi/connectors/coinbaseWallet';
-import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
-import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
-
-// Configure chains & providers with the Alchemy provider.
-// Two popular providers are Alchemy (alchemy.com) and Infura (infura.io)
-
-// TODO: .env file
-const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [mainnet, polygon, bsc],
-  [
-    infuraProvider({ apiKey: 'ac546be7d92f46f5bbd794a14f4fd707' }),
-    publicProvider(),
-  ]
-);
+const addedChains = [
+  sepolia,
+  avalancheFuji,
+  polygonZkEvmCardona,
+  polygonAmoy,
+  baseSepolia,
+];
 
 // Set up wagmi config
-const config = createConfig({
-  autoConnect: true,
+export const config = createConfig({
+  chains: addedChains,
   connectors: [
-    new MetaMaskConnector({ chains }),
-    new CoinbaseWalletConnector({
-      chains,
-      options: {
-        appName: 'wagmi',
-      },
-    }),
-    new WalletConnectConnector({
-      chains,
-      options: {
-        projectId: '5fd254e3935b5aede91466b0037df4b9',
-      },
-    }),
+    walletConnect({ projectId: "35c6df36716ecbd04dcc4cedba364876" }),
   ],
-  publicClient,
-  webSocketPublicClient,
+  transports: {
+    [sepolia.id]: http(
+      "https://eth-sepolia.g.alchemy.com/v2/ZA8wYWOwu6uSKNWkXEw-715wbvPwDmWv"
+    ),
+    [avalancheFuji.id]: http(),
+    // [mainnet.id]: http(),
+    // [bsc.id]: http(
+    //   "https://rpc.ankr.com/bsc/3c94f0b21c3183522e817dc726cdad596439d04df98829aaf291b8b661564f6b"
+    // ),
+  },
 });
 
+const queryClient = new QueryClient();
+
 function Wagmi({ children }) {
-  return <WagmiConfig config={config}>{children}</WagmiConfig>;
+  return (
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </WagmiProvider>
+  );
 }
 
 export default Wagmi;

@@ -22,11 +22,18 @@ export default [
         icon: <Bubble />,
         path: "/swap",
       },
+      // {
+      //   title: "Liquidity Setup",
+      //   icon: <Bubble />,
+      //   path: "swap/liquidity",
+      // },
+
       {
         title: "Pool Factory",
         icon: <Repeat />,
         path: "/swap/bridge",
       },
+
       // {
       //   title: "Data Link",
       //   icon: <Data />,
@@ -39,6 +46,17 @@ export default [
       // },
     ],
   },
+  // {
+  //   title: "liquidity",
+  //   path: "/liquidity",
+  //   links: [
+  //     {
+  //       title: "Liquidity Setup",
+  //       icon: <Bubble />,
+  //       path: "/liquidity",
+  //     },
+  //   ],
+  // },
   {
     title: "DeFi",
     path: "/defi",

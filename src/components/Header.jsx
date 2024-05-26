@@ -10,7 +10,7 @@ import { SidebarContext } from "../context/SidebarContext";
 
 import { useAccount } from "wagmi";
 import WalletButton from "./WalletButton";
-import BuySYTButton from "./BuySYTButton";
+
 import SwitchNetworkDropdown from "./SwitchNetworkDropdown";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -75,7 +75,6 @@ function Header() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          {/* <BuySYTButton /> */}
           <WalletButton />
           {isConnected && <SwitchNetworkDropdown />}
         </div>
@@ -97,7 +96,6 @@ function Header() {
                 isOpen ? "md:left-64" : "md:left-20"
               )}
             >
-              <BuySYTButton width="full" />
               <WalletButton width="full" />
               {isConnected && <SwitchNetworkDropdown width="full" />}
             </motion.div>

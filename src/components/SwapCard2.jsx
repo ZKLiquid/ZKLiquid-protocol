@@ -1,14 +1,18 @@
 import { useState, useEffect, useContext, useCallback } from "react";
 import { ArrowDown2, ArrowRight, Repeat, Setting4 } from "iconsax-react";
-import USDT from "../assets/svg/usdt.svg";
 
 import { ClipLoader } from "react-spinners";
 
 import ModalRight from "../common/ModalRight";
-import { erc20Abi } from "viem";
-import { useBalance, useAccount, useSendTransaction } from "wagmi";
-import { writeContract, readContract } from "@wagmi/core";
-import { avalancheFuji, sepolia } from "viem/chains";
+import {
+  erc20ABI,
+  useBalance,
+  useNetwork,
+  useSendTransaction,
+  useWaitForTransaction,
+} from "wagmi";
+import { prepareWriteContract, writeContract } from "@wagmi/core";
+import { fetchBalance } from "@wagmi/core";
 
 import Modal from "../common/Modal";
 import clsx from "clsx";
@@ -18,21 +22,13 @@ import Button from "./Button";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { parseEther } from "viem";
-import { useDebounce, useMediaQuery } from "usehooks-ts";
+import { useDebounce } from "usehooks-ts";
 
 import { ethers } from "ethers";
 import WalletsModal from "./WalletsModal";
 import { WagmiContext } from "../context/WagmiContext";
 import { NETWORK_COINS, chainAlliases } from "../constant/globalConstants";
 import SyntrumToast from "./SyntrumToast";
-
-import poolContract from "../contracts/pool.json";
-import { config } from "../Wagmi";
-import SwitchNetworkDropdown from "./SwitchNetworkDropdownSwapcard";
-import DestinationChainDropdown from "./DestinationChainDropdown";
-import { tokensSelector } from "../contracts/destination-selector";
-import SwitchSourceToken from "./SwitchSourceToken";
-import DestinationToken from "./DestinationToken";
 
 function SwapCard({ selectedToken }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -46,8 +42,9 @@ function SwapCard({ selectedToken }) {
   const [isTokenToSelected, setTokenToSelected] = useState(false);
 
   const [tokenSearch, setTokenSearch] = useState("");
+  const debouncedTokenSearch = useDebounce(tokenSearch, 500);
 
-  const { chain } = useAccount();
+  const { chain } = useNetwork();
 
   const [tokens, setTokens] = useState([]);
   const [tokenWithBalances, setTokenBalances] = useState([]);
@@ -78,10 +75,49 @@ function SwapCard({ selectedToken }) {
 
   const [errorMessage, setErrorMessage] = useState("Swap");
 
-  const poolAbi = poolContract.abi;
-  const [selectedId, setSelectedId] = useState();
-  const [switchToken, setSwitchToken] = useState("USDT");
-  const isMobile = useMediaQuery("(max-width: 375px)");
+  const [approveHash, setApproveHash] = useState("");
+
+  useEffect(() => {
+    axios
+      .get(
+        `https://v001.wallet.syntrum.com/wallet/swapAssets/${
+          chain ? chainAlliases[chain.id] : "ethereum"
+        }`
+      )
+      .then((res) => {
+        setTokens(res.data);
+
+        if (res.data.length > 1) {
+          setTokenOne(res.data[0]);
+        } else {
+          setTokenOne(tokens[0]);
+        }
+
+        if (res.data.length > 2) {
+          setTokenTwo(res.data[1]);
+        } else {
+          setTokenTwo(tokens[1]);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [chain]);
+
+  useEffect(() => {
+    let platformId = chain ? chainAlliases[chain.id] : "ethereum";
+
+    axios
+      .get(
+        `https://v001.wallet.syntrum.com/wallet/swapAssets/${platformId}?search=${debouncedTokenSearch}`
+      )
+      .then((res) => {
+        setTokens(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [debouncedTokenSearch]);
 
   useEffect(() => {
     if (selectedToken?.type !== tokenTwo?.type) {
@@ -97,6 +133,25 @@ function SwapCard({ selectedToken }) {
       }
     }
   }, [selectedToken]);
+
+  useEffect(() => {
+    axios
+      .get(
+        `https://v001.wallet.syntrum.com/wallet/getSwapSettings/${
+          chain ? chainAlliases[chain.id] : "ethereum"
+        }`
+      )
+      .then((res) => {
+        setToleranceOptions(res.data.groups[0].rows[0]);
+        setTrxSpeedOptions(res.data.groups[0].rows[1]);
+
+        setTolerance(res.data.groups[0].rows[0].value.default);
+        setGasPrice(res.data.groups[0].rows[1].value.default);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
   const updateTokenLists = (tempTokenList, tokenOne, tokenTwo) => {
     tempTokenList.sort((a, b) => parseFloat(b.balance) - parseFloat(a.balance));
@@ -504,6 +559,133 @@ function SwapCard({ selectedToken }) {
   };
 
   useEffect(() => {
+    if (Number(selectedDEX?.toAmount) !== Number(tokenTwoAmount)) {
+      setTokenTwoAmount(selectedDEX?.toAmount);
+    }
+
+    if (Number(selectedDEX?.fromAmount) !== Number(tokenOneAmount)) {
+      setTokenOneAmount(selectedDEX?.fromAmount);
+    }
+  }, [selectedDEX]);
+
+  const { data, sendTransaction } = useSendTransaction({
+    from: address,
+    to: selectedDEX?.serviceData?.to,
+    data: selectedDEX?.serviceData?.txData,
+    value: tokenOne?.type === "coin" ? parseEther(debouncedValue || "0") : "",
+  });
+
+  const { isSuccess, data: transactionData } = useWaitForTransaction({
+    hash: data?.hash,
+  });
+
+  useEffect(() => {
+    if (isSuccess) {
+      const timestamp = new Date().getTime();
+
+      axios
+        .post("https://v001.wallet.syntrum.com/wallet/swap/tx", {
+          platformId: chain ? chainAlliases[chain.id] : "ethereum",
+          address,
+          txTimestamp: timestamp.toString(),
+          data: {
+            transactionHash: transactionData.transactionHash,
+            status: transactionData.status,
+            fromToken:
+              tokenOne.type === "coin"
+                ? NETWORK_COINS[tokenOne.platformId].symbol
+                : tokenOne.tokenData.symbol,
+            fromAmount: tokenOneAmount,
+            toToken:
+              tokenTwo.type === "coin"
+                ? NETWORK_COINS[tokenTwo.platformId].symbol
+                : tokenTwo.tokenData.symbol,
+            toAmount: tokenTwoAmount,
+            gasUsed:
+              ethers.formatUnits(transactionData.gasUsed, 1) *
+              ethers.formatUnits(transactionData.effectiveGasPrice, 18),
+          },
+        })
+        .then(
+          (response) => {
+            if (response.data.success) {
+              toast.success(
+                <SyntrumToast
+                  title="Transaction successful"
+                  platformId={chainAlliases[chain?.id]}
+                  transactionId={transactionData.transactionHash}
+                />
+              );
+              setTokenOneAmount("");
+              setTokenTwoAmount("");
+              setIsActionLoading(false);
+            } else {
+              setIsActionLoading(false);
+              if (response.data.errors.length > 0) {
+                response.data.errors.forEach((error) => {
+                  toast.error(
+                    <SyntrumToast
+                      title="Transaction error"
+                      platformId={chainAlliases[chain?.id]}
+                      transactionId={null}
+                      content={error}
+                    />
+                  );
+                });
+              }
+            }
+          },
+          (error) => {
+            setIsActionLoading(false);
+            console.log(error);
+          }
+        );
+    }
+  }, [isSuccess]);
+
+  const { isSuccess: isApproveSuccess, data: approveTransactionData } =
+    useWaitForTransaction({
+      hash: approveHash,
+    });
+
+  useEffect(() => {
+    if (isApproveSuccess) {
+      toast.success(
+        <SyntrumToast
+          title="Approval successful"
+          platformId={chainAlliases[chain?.id]}
+          transactionId={approveTransactionData.transactionHash}
+        />
+      );
+
+      getApprovedSwapData(selectedDEX.name);
+      setIsActionLoading(false);
+    }
+  }, [isApproveSuccess]);
+
+  const handleTrx = async () => {
+    console.log(selectedDEX);
+    setIsActionLoading(true);
+
+    if (selectedDEX?.needApprove) {
+      const config = await prepareWriteContract({
+        address: selectedDEX.serviceData.tokenAddress,
+        abi: erc20ABI,
+        functionName: "approve",
+        args: [
+          selectedDEX.serviceData.to,
+          ethers.parseUnits(selectedDEX.fromAmount),
+        ],
+      });
+
+      const { hash } = await writeContract(config);
+      setApproveHash(hash);
+    } else {
+      sendTransaction?.();
+    }
+  };
+
+  useEffect(() => {
     if (!isConnected && tokenOneAmount) {
       toast.error(
         <SyntrumToast
@@ -561,60 +743,12 @@ function SwapCard({ selectedToken }) {
     updateTokenLists(tokenWithBalances, tokenOne, tokenTwo);
   }, [tokenOne, tokenTwo]);
 
-  const contractAddress = "0x2B5474bCCCae8C9cce8D70Ed0e24B8D3797b2BAD";
-
-  async function handleRead() {
-    const result = await readContract(config, {
-      chainId: sepolia.id,
-      abi: poolAbi,
-      address: contractAddress,
-      functionName: "getRouter",
-    });
-    console.log("Last Received Message", result);
-  }
-
-  async function handleApprove() {
-    const res = await writeContract(config, {
-      chainId: avalancheFuji.id,
-      abi: erc20Abi,
-      address: "0x17d6e28C673974Ce04a183f1195F6f03b6Fccc24",
-      functionName: "approve",
-      args: ["0x96120cBa6C7D933e06C290cC0BBE41ce17194c1F", parseEther("10000")],
-    });
-  }
-
-  function handleTransfer() {
-    async function sendFxn() {
-      const result = await writeContract(config, {
-        chainId: avalancheFuji.id,
-        abi: poolAbi,
-        address: "0x96120cBa6C7D933e06C290cC0BBE41ce17194c1F",
-        functionName: "sendTokenPayLINK",
-        args: [
-          "16015286601757825753",
-          "0x2B5474bCCCae8C9cce8D70Ed0e24B8D3797b2BAD",
-          "0x17d6e28C673974Ce04a183f1195F6f03b6Fccc24",
-          parseEther("999"),
-          "0x121334F7E1f17d76eA29fA49Ba82582BdB03eCcF",
-        ],
-      });
-
-      setHashIn(() => result);
-    }
-
-    try {
-      sendFxn();
-    } catch (e) {
-      setProcessing(() => false);
-    }
-  }
-
   return (
     <>
       <div className="p-4 bg-[#04131F]  md:p-6 rounded-xl ">
         <div className="grid grid-cols-3">
           <div aria-hidden="true">&nbsp;</div>
-          <h3 className="text-xl font-bold text-center text-2">Swap/Bridge</h3>
+          <h3 className="text-xl font-bold text-center text-2">Swap/bridge</h3>
           <div className="text-right">
             <button onClick={() => setIsSettingsModalOpen(true)}>
               <Setting4 />
@@ -625,17 +759,6 @@ function SwapCard({ selectedToken }) {
         <div className="flex items-end justify-between mt-4">
           <div className="flex flex-col items-start space-y-3">
             <p className="text-sm font-medium text-dark-100">From</p>
-
-            {isConnected && (
-              <div className="flex items-end gap-4 ">
-                <SwitchNetworkDropdown isMobile={isMobile} />
-
-                <SwitchSourceToken
-                  switchToken={switchToken}
-                  setSwitchToken={setSwitchToken}
-                />
-              </div>
-            )}
             <input
               type="number"
               className="w-full text-xl font-bold text-white bg-transparent border-0 outline-none md:text-3xl placeholder:text-dark-200"
@@ -643,12 +766,15 @@ function SwapCard({ selectedToken }) {
               value={formatBalance(tokenOneAmount, 8)}
               onChange={changeAmountHandler}
             />
-            <button className="text-sm font-semibold text-white uppercase">
+            <button
+              className="text-sm font-semibold text-white uppercase"
+              onClick={handleMaxBalance}
+            >
               Max
             </button>
           </div>
 
-          <div className="flex-shrink-0 space-y-2 text-right ">
+          <div className="flex-shrink-0 space-y-2 text-right">
             {filteredTokens.length > 0 && (
               <button
                 className="inline-flex items-center justify-center gap-x-1.5 rounded-lg bg-dark-300 px-3 py-2 text-sm font-semibold text-white shadow-sm  hover:bg-dark-300/50 whitespace-nowrap"
@@ -684,8 +810,9 @@ function SwapCard({ selectedToken }) {
               </button>
             )}
             {balance && (
-              <p className="text-xs font-medium md:text-sm text-dark-100 ">
-                {formatBalance(balance?.formatted, 4)} {balance?.symbol}
+              <p className="text-xs font-medium md:text-sm text-dark-100">
+                Your {balance?.symbol} balance:{" "}
+                {formatBalance(balance?.formatted, 8)}
               </p>
             )}
           </div>
@@ -703,17 +830,6 @@ function SwapCard({ selectedToken }) {
         <div className="flex items-end justify-between mt-4">
           <div className="flex flex-col items-start space-y-3">
             <p className="text-sm font-medium text-dark-100">To</p>
-            {isConnected && (
-              <div className="flex items-end gap-4 ">
-                <DestinationChainDropdown
-                  selectedId={selectedId}
-                  setSelectedId={setSelectedId}
-                  isMobile={isMobile}
-                />
-
-                <DestinationToken switchToken={switchToken} />
-              </div>
-            )}
             <input
               type="number"
               className="w-full text-xl font-bold text-white bg-transparent border-0 outline-none md:text-3xl placeholder:text-dark-200"
@@ -862,7 +978,7 @@ function SwapCard({ selectedToken }) {
         <div className="mt-6">
           {isConnected ? (
             parseFloat(tokenOneAmount) > 0 && isSwapAvailable ? (
-              <Button disabled={isActionLoading}>
+              <Button onClick={handleTrx} disabled={isActionLoading}>
                 {isActionLoading ? (
                   <>
                     <ClipLoader
@@ -880,12 +996,13 @@ function SwapCard({ selectedToken }) {
                 )}
               </Button>
             ) : (
-              <Button disabled={true}>{errorMessage}</Button>
+              <Button onClick={handleTrx} disabled={true}>
+                {errorMessage}
+              </Button>
             )
           ) : (
             <Button onClick={() => setIsOpen(true)}>Connect Wallet</Button>
           )}
-          {/* <button onClick={handleTransfer}>Buy now</button> */}
         </div>
       </div>
 
@@ -1006,7 +1123,7 @@ function SwapCard({ selectedToken }) {
         </div>
       </ModalRight>
 
-      {/* <Modal
+      <Modal
         open={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
         heading="Swap Settings"
@@ -1089,7 +1206,7 @@ function SwapCard({ selectedToken }) {
         >
           Save
         </button>
-      </Modal> */}
+      </Modal>
 
       <WalletsModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
       {/* <ToastContainer /> */}

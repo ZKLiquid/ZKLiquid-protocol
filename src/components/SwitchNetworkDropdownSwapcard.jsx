@@ -8,12 +8,11 @@ import { toast } from "react-toastify";
 import { config } from "../Wagmi";
 import { avalancheFuji, sepolia } from "viem/chains";
 
-function SwitchNetworkDropdown({ width }) {
+function SwitchNetworkDropdown({ width, isMobile }) {
   const { chain } = useAccount();
   const { chains, error, isLoading, pendingChainId, switchChain } =
     useSwitchChain();
-
-  console.log("configured chains include", chains, chain);
+  const nameLength = isMobile ? 10 : 14;
 
   async function handleSwitchChain() {
     const response = switchChain({ chainId: sepolia.id });
@@ -37,11 +36,19 @@ function SwitchNetworkDropdown({ width }) {
         <>
           <Menu.Button
             className={clsx(
-              "flex gap-2 items-center p-1 pr-2.5 rounded-full text-sm font-medium border border-dark-300 transition-colors hover:bg-dark-300",
+              "flex gap-2 items-center p-1 pr-2.5 rounded-full text-sm w-full lg:w-[185px] font-medium border border-gray-400 transition-colors hover:bg-dark-300",
               width === "full" && "w-full",
               open ? "bg-dark-300" : "bg-dark-400"
             )}
           >
+            {/* <div className="bg-[#101115] p-1 rounded-full">
+              <img
+                className="w-6 h-6"
+                src={`/cryptoIcons/${chain?.id}.svg`}
+                alt=""
+              />
+            </div>
+            <span className="lg:hidden xl:inline">{chain?.name}</span> */}
             {chain ? (
               <>
                 <div className="bg-[#101115] p-1 rounded-full">
@@ -51,10 +58,15 @@ function SwitchNetworkDropdown({ width }) {
                     alt=""
                   />
                 </div>
-                <span className="lg:hidden xl:inline">{chain?.name}</span>
+                <span className="lg:hidden xl:inline">
+                  {chain?.name.length > nameLength
+                    ? chain?.name.slice(0, nameLength - 3) + "..."
+                    : chain?.name}
+                </span>
               </>
             ) : (
               <>
+                {" "}
                 <div className="bg-[#101115] p-1 rounded-full">
                   <img
                     className="w-6 h-6"
@@ -62,7 +74,6 @@ function SwitchNetworkDropdown({ width }) {
                     alt=""
                   />
                 </div>
-
                 <span>Wrong Network</span>
               </>
             )}
@@ -87,19 +98,19 @@ function SwitchNetworkDropdown({ width }) {
           >
             <Menu.Items className="absolute right-0 z-10 w-56 py-1 mt-2 origin-top-right border rounded-md shadow-lg bg-dark-400 border-dark-300 ring-1 ring-black ring-opacity-5 focus:outline-none">
               {chains.map((x) => (
-                <Menu.Item key={x?.id}>
+                <Menu.Item key={x.id}>
                   <button
-                    disabled={!switchChain || x?.id === chain?.id}
+                    disabled={!switchChain || x.id === chain?.id}
                     // onClick={() => switchChain?.(x.id)}
-                    onClick={() => switchChain({ chainId: x?.id })}
+                    onClick={() => switchChain({ chainId: x.id })}
                     className={clsx(
                       "px-4 py-2 text-sm transition-colors flex items-center gap-2 w-full text-left hover:bg-dark-300",
-                      !switchChain || (x?.id === chain?.id && "!hidden")
+                      !switchChain || (x.id === chain?.id && "!hidden")
                     )}
                   >
                     <img
                       className="w-6 h-6"
-                      src={`/cryptoIcons/${x?.id}.svg`}
+                      src={`/cryptoIcons/${x.id}.svg`}
                       alt=""
                     />
                     {x.name}

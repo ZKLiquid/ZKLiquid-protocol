@@ -1,31 +1,25 @@
-import React, { useContext, useEffect } from 'react';
-import Modal from '../common/Modal';
+import React, { useContext, useEffect } from "react";
+import Modal from "../common/Modal";
 
-import { ArrowRight2 } from 'iconsax-react';
-import { toast } from 'react-toastify';
-import { WagmiContext } from '../context/WagmiContext';
+import { ArrowRight2 } from "iconsax-react";
+import { toast } from "react-toastify";
+import { WagmiContext } from "../context/WagmiContext";
+import { useConnect, useDisconnect, useAccount } from "wagmi";
+import { sepolia, avalancheFuji } from "viem/chains";
 
 function WalletsModal({ isOpen, onClose }) {
-  const { connect, connectors, connectError, connectLoading, connectPending } =
-    useContext(WagmiContext);
+  // const { connect, connectors, connectError, connectLoading, connectPending } =
+  //   useContext(WagmiContext);
+  const { connect, connectors, error, isLoading, pendingConnector } =
+    useConnect();
 
-  const connectHandler = (connector) => {
-    if (!connector.ready) {
-      if (connector.id === 'metaMask') {
-        window.open('https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn', '_blank');
-      }
-      onClose();
-    } else {
-      connect({ connector });
-      onClose();
-    }   
-  };
+  const { chain } = useAccount();
 
   useEffect(() => {
-    if (connectError && connectError.message) {
-      toast.error(connectError.message);
+    if (error && error.message) {
+      toast.error(error.message);
     }
-  }, [connectError]);
+  }, [error]);
 
   return (
     <Modal open={isOpen} onClose={onClose} heading="Connect to a wallet">
@@ -34,19 +28,25 @@ function WalletsModal({ isOpen, onClose }) {
           <button
             // disabled={!connector.ready}
             key={connector.id}
-            onClick={() => connectHandler(connector)}
-            className="flex items-center w-full gap-2 px-3 py-2 text-left rounded-lg bg-dark-300 hover:bg-opacity-60"
+            onClick={() =>
+              connect({ chainId: avalancheFuji.id || chain.id, connector })
+            }
+            className="flex items-center w-full gap-3 px-3 py-2 text-left text-lg rounded-lg bg-dark-300 hover:bg-opacity-60"
           >
             <img
               className="w-12 h-12"
-              src={`./walletIcons/${connector.id}.svg`}
+              src={
+                connector.name === "WalletConnect"
+                  ? `./walletIcons/${connector.name}.svg`
+                  : connector.icon
+              }
               alt=""
             />
             {connector.name}
-            {!connector.ready && ' install required!'}
-            {connectLoading &&
-              connector.id === connectPending?.id &&
-              ' (connecting)'}
+
+            {isLoading &&
+              connector.id === pendingConnector?.id &&
+              " (connecting)"}
 
             <ArrowRight2 size="20" className="ml-auto" />
           </button>
