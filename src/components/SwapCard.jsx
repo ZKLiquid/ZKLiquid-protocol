@@ -84,35 +84,6 @@ function SwapCard({ setMessageId, messageId }) {
     }
   };
 
-  // useEffect(() => {
-  //   const fetchWalletBalance = async () => {
-  //     const updatedTokens = await Promise.all(
-  //       tokens.map(async (token) => {
-  //         if (token.type === "token") {
-  //           const balance = await fetchBalance({
-  //             address,
-  //             token: token.tokenData?.tokenAddress,
-  //           });
-
-  //           return { ...token, balance: balance.formatted };
-  //         } else {
-  //           const balance = await fetchBalance({
-  //             address,
-  //           });
-
-  //           return { ...token, balance: balance.formatted };
-  //         }
-  //       })
-  //     );
-
-  //     setTokenBalances(updatedTokens);
-  //   };
-
-  //   if (tokens.length > 0) {
-  //     fetchWalletBalance();
-  //   }
-  // }, [chain, tokens]);
-
   const spender = poolContracts[chain?.id];
 
   useEffect(() => {
@@ -129,7 +100,7 @@ function SwapCard({ setMessageId, messageId }) {
     if (address) {
       fetchBalance(address);
     }
-  }, [address, chain, switchToken]);
+  }, [address, chain, switchToken, isTransfer]);
 
   useEffect(() => {
     if (!address) {
@@ -181,6 +152,9 @@ function SwapCard({ setMessageId, messageId }) {
       setIsProcessing(() => false);
       if (isTransfer) {
         setMessageId(() => msgId);
+        setAmount(() => 0);
+        setSelectedId();
+        setRecipientAddr(() => address);
         const trxData = {
           // details: `${amount} ${switchToken.name}: ${chain.name} to ${
           //   chains.find((chain) => chain.id === selectedId).name // Assuming each chain object has a name property
@@ -261,6 +235,10 @@ function SwapCard({ setMessageId, messageId }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }
 
+  function handleMax() {
+    setAmount(() => balance);
+  }
+
   return (
     <>
       <div className="p-4 bg-[#04131F]  md:p-6 rounded-xl ">
@@ -295,7 +273,10 @@ function SwapCard({ setMessageId, messageId }) {
               placeholder="0.00"
               value={!!amount && formatBalance(amount, 8)}
             />
-            <button className="text-sm font-semibold text-white uppercase">
+            <button
+              className="text-sm font-semibold text-white uppercase"
+              onClick={handleMax}
+            >
               Max
             </button>
           </div>
