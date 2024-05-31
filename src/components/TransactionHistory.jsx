@@ -83,7 +83,7 @@ export default function TransactionHistory({ transactionData }) {
                               >
                                 <circle cx="4" cy="4" r="3" />
                               </svg>
-                              Complete
+                              Submitted
                             </div>
                           </td>
 
@@ -97,7 +97,7 @@ export default function TransactionHistory({ transactionData }) {
                                 >
                                   <circle cx="4" cy="4" r="3" />
                                 </svg>
-                                Complete
+                                Submitted
                               </div>
                             </div>
                           </td>
