@@ -10,16 +10,17 @@ import {
   Image,
   Link2,
   Data,
+  BuyCrypto,
 } from "iconsax-react";
 
 export default [
   {
-    title: "Swap",
+    title: "Bridge",
     path: "/swap",
     links: [
       {
-        title: "Liquidity Protocol",
-        icon: <Bubble />,
+        title: "Multichain Bridge",
+        icon: <Repeat />,
         path: "/swap",
       },
       // {
@@ -29,9 +30,9 @@ export default [
       // },
 
       {
-        title: "Pool Factory",
-        icon: <Repeat />,
-        path: "/swap/bridge",
+        title: "Faucet",
+        icon: <BuyCrypto />,
+        path: "/swap/faucet",
       },
 
       // {
@@ -46,6 +47,7 @@ export default [
       // },
     ],
   },
+
   // {
   //   title: "liquidity",
   //   path: "/liquidity",

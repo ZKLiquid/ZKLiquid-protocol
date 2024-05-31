@@ -1,6 +1,12 @@
+import { ArrowRight } from "iconsax-react";
 import USDT from "../assets/svg/usdt.svg";
 
-export default function TransactionHistory() {
+const BASE_CCIP_URL = "https://ccip.chain.link/msg";
+const handleCCIPOpen = (id) => {
+  window.open(`${BASE_CCIP_URL}/${id}`, "_blank");
+};
+
+export default function TransactionHistory({ transactionData }) {
   return (
     <div>
       <div className="lg:col-span-9 px-3 md:px-0">
@@ -28,155 +34,75 @@ export default function TransactionHistory() {
                   </thead>
 
                   <tbody className="divide-y divide-gray-600">
-                    <tr>
-                      <td className="px-4 py-4 text-sm font-bold text-gray-200 sm:px-6 whitespace-nowrap">
-                        <div className="inline-flex items-center">
-                          <img
-                            className="flex-shrink-0 object-cover w-8 h-8 mr-3 rounded-full"
-                            src={USDT}
-                            alt=""
-                          />
-                          100 USDT: Ethereum to Avalanche
-                        </div>
-                        <div className="space-y-1 2xl:hidden pl-11">
-                          <p className="text-sm font-medium text-gray-200">
-                            07 January, 2022
-                          </p>
-                        </div>
-                      </td>
+                    {[...transactionData]
+                      .reverse()
+                      .map((transaction, index) => (
+                        <tr
+                          key={index}
+                          className="cursor-pointer hover:bg-[#202026]"
+                          onClick={() => handleCCIPOpen(transaction.id)}
+                        >
+                          <td className="px-4 py-4 text-sm font-bold text-gray-200 sm:px-6 whitespace-nowrap">
+                            <div className="inline-flex items-center">
+                              <img
+                                className="flex-shrink-0 object-cover w-7 h-7 mr-3 rounded-full"
+                                src={`/cryptoIcons/${transaction.name}.svg`}
+                                alt=""
+                              />
+                              <div className="flex w-[100px]">{`${transaction.amount} ${transaction.name}: `}</div>
 
-                      <td className="hidden px-4 py-4 text-sm font-medium text-gray-200 sm:px-6 2xl:table-cell whitespace-nowrap">
-                        07 January, 2022
-                      </td>
+                              <img
+                                className="ml-2 flex-shrink-0 object-cover w-7 h-7 mr-3 rounded-full"
+                                src={`/cryptoIcons/${transaction.from}.svg`}
+                                alt=""
+                              />
+                              <ArrowRight size="24" color="#37d67a" />
+                              <img
+                                className="ml-2 flex-shrink-0 object-cover w-7 h-7 mr-3 rounded-full"
+                                src={`/cryptoIcons/${transaction.to}.svg`}
+                                alt=""
+                              />
+                            </div>
+                            <div className="space-y-1 2xl:hidden pl-11">
+                              <p className="text-sm font-medium text-gray-200">
+                                {transaction.time}
+                              </p>
+                            </div>
+                          </td>
 
-                      <td className="hidden px-4 py-4 text-sm font-medium text-gray-200 sm:px-6 2xl:table-cell whitespace-nowrap">
-                        <div className="inline-flex items-center">
-                          <svg
-                            className="mr-1.5 h-2.5 w-2.5 text-green-500"
-                            fill="currentColor"
-                            viewBox="0 0 8 8"
-                          >
-                            <circle cx="4" cy="4" r="3" />
-                          </svg>
-                          Complete
-                        </div>
-                      </td>
+                          <td className="hidden px-4 py-4 text-sm font-medium text-gray-200 sm:px-6 2xl:table-cell whitespace-nowrap">
+                            {transaction.time}
+                          </td>
 
-                      <td className="px-4 py-4 text-sm font-medium text-right text-gray-200 sm:px-6 whitespace-nowrap 2xl:hidden">
-                        <div className="mt-1 ">
-                          <div className="inline-flex items-center justify-end mt-1">
-                            <svg
-                              className="mr-1.5 h-2.5 w-2.5 text-green-500"
-                              fill="currentColor"
-                              viewBox="0 0 8 8"
-                            >
-                              <circle cx="4" cy="4" r="3" />
-                            </svg>
-                            Complete
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
+                          <td className="hidden px-4 py-4 text-sm font-medium text-gray-200 sm:px-6 2xl:table-cell whitespace-nowrap">
+                            <div className="inline-flex items-center">
+                              <svg
+                                className="mr-1.5 h-2.5 w-2.5 text-green-500"
+                                fill="currentColor"
+                                viewBox="0 0 8 8"
+                              >
+                                <circle cx="4" cy="4" r="3" />
+                              </svg>
+                              Complete
+                            </div>
+                          </td>
 
-                    <tr>
-                      <td className="px-4 py-4 text-sm font-bold text-gray-200 sm:px-6 whitespace-nowrap">
-                        <div className="inline-flex items-center">
-                          <img
-                            className="flex-shrink-0 object-cover w-8 h-8 mr-3 rounded-full"
-                            src={USDT}
-                            alt=""
-                          />
-                          250 USDT: Ethereum to zkEVM
-                        </div>
-                        <div className="space-y-1 2xl:hidden pl-11">
-                          <p className="text-sm font-medium text-gray-200">
-                            07 January, 2022
-                          </p>
-                        </div>
-                      </td>
-
-                      <td className="hidden px-4 py-4 text-sm font-medium text-gray-200 sm:px-6 2xl:table-cell whitespace-nowrap">
-                        06 January, 2022
-                      </td>
-
-                      <td className="hidden px-4 py-4 text-sm font-medium text-gray-200 sm:px-6 2xl:table-cell whitespace-nowrap ">
-                        <div className="inline-flex items-center">
-                          <svg
-                            className="mr-1.5 h-2.5 w-2.5 text-yellow-500"
-                            fill="currentColor"
-                            viewBox="0 0 8 8"
-                          >
-                            <circle cx="4" cy="4" r="3" />
-                          </svg>
-                          Pending
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-4 text-sm font-medium text-right text-gray-200 sm:px-6 whitespace-nowrap 2xl:hidden">
-                        <div className="mt-1 ">
-                          <div className="inline-flex items-center justify-end mt-1">
-                            <svg
-                              className="mr-1.5 h-2.5 w-2.5 text-yellow-500"
-                              fill="currentColor"
-                              viewBox="0 0 8 8"
-                            >
-                              <circle cx="4" cy="4" r="3" />
-                            </svg>
-                            Pending
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td className="px-4 py-4 text-sm font-bold text-gray-200 sm:px-6 whitespace-nowrap">
-                        <div className="inline-flex items-center">
-                          <img
-                            className="flex-shrink-0 object-cover w-8 h-8 mr-3 rounded-full"
-                            src={USDT}
-                            alt=""
-                          />
-                          150 USDT: Ethereum to BNB Chain
-                        </div>
-                        <div className="space-y-1 2xl:hidden pl-11">
-                          <p className="text-sm font-medium text-gray-200">
-                            07 January, 2022
-                          </p>
-                        </div>
-                      </td>
-
-                      <td className="hidden px-4 py-4 text-sm font-medium text-gray-200 sm:px-6 2xl:table-cell whitespace-nowrap">
-                        05 January, 2022
-                      </td>
-
-                      <td className="hidden px-4 py-4 text-sm font-medium text-gray-200 sm:px-6 2xl:table-cell whitespace-nowrap">
-                        <div className="inline-flex items-center">
-                          <svg
-                            className="mr-1.5 h-2.5 w-2.5 text-gray-300"
-                            fill="currentColor"
-                            viewBox="0 0 8 8"
-                          >
-                            <circle cx="4" cy="4" r="3" />
-                          </svg>
-                          Canceled
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-4 text-sm font-medium text-right text-gray-200 sm:px-6 whitespace-nowrap 2xl:hidden">
-                        <div className="mt-1 ">
-                          <div className="inline-flex items-center justify-end mt-1">
-                            <svg
-                              className="mr-1.5 h-2.5 w-2.5 text-gray-300"
-                              fill="currentColor"
-                              viewBox="0 0 8 8"
-                            >
-                              <circle cx="4" cy="4" r="3" />
-                            </svg>
-                            Canceled
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
+                          <td className="px-4 py-4 text-sm font-medium text-right text-gray-200 sm:px-6 whitespace-nowrap 2xl:hidden">
+                            <div className="mt-1 ">
+                              <div className="inline-flex items-center justify-end mt-1">
+                                <svg
+                                  className="mr-1.5 h-2.5 w-2.5 text-green-500"
+                                  fill="currentColor"
+                                  viewBox="0 0 8 8"
+                                >
+                                  <circle cx="4" cy="4" r="3" />
+                                </svg>
+                                Complete
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>

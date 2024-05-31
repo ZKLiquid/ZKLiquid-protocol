@@ -1,37 +1,149 @@
 import { useState, useEffect } from "react";
 import clsx from "clsx";
 
-import { bridge } from "@/constant/globalConstants";
-import NewsLetter from "@/components/NewsLetter";
-
 import SwapCard from "../../components/SwapCard";
 import TopTokensList from "../../components/TopTokensList";
 import { Tab } from "@headlessui/react";
 
 import { useMediaQuery } from "usehooks-ts";
-import axios from "axios";
 
 import bridges from "@/assets/svg/bridge.svg";
 import numbers from "@/assets/svg/number.svg";
 import users from "@/assets/svg/users.svg";
+import SuccessModal from "../../components/SuccessModal";
+import { useAccount, useSwitchChain } from "wagmi";
+import { erc20Abi, formatEther } from "viem";
+import {
+  writeContract,
+  readContract,
+  waitForTransactionReceipt,
+} from "@wagmi/core";
+import {
+  tokensSelector,
+  destinationSelectors,
+} from "../../contracts/destination-selector";
+import poolContractJson from "../../contracts/pool.json";
+import faucetContractJson from "../../contracts/faucet.json";
+import { config } from "../../Wagmi";
+import {
+  sepolia,
+  avalancheFuji,
+  bscTestnet,
+  polygonAmoy,
+} from "@wagmi/core/chains";
 
 function Trade() {
   const isMd = useMediaQuery("(min-width: 1024px)");
+  const { chain, address, isConnected } = useAccount();
+  const { chains } = useSwitchChain();
 
-  // const isMd = useMediaQuery("(min-width: 768px)");
   const [selectedToken, setSelectedToken] = useState(null);
   const [statsInfo, setStatsInfo] = useState(0);
-  const [isGetInfo, setGetInfo] = useState(false);
+  const [messageId, setMessageId] = useState("");
+  const [hashUrl, setHashUrl] = useState("");
+  const [transactionData, setTransactionData] = useState([]);
+  const [totalRes, setTotalRes] = useState(0);
+
+  const [usdtBalance, setUsdtBalance] = useState(0);
+  const [usdcBalance, setUsdcBalance] = useState(0);
+  const totalBalance = Number(usdtBalance) + Number(usdcBalance);
+
+  const usdtToken = tokensSelector[0][chain?.id];
+  const usdcToken = tokensSelector[1][chain?.id];
+  const poolContract = poolContractJson.contracts[chain?.id];
+
+  const faucetAbi = faucetContractJson.abi;
+
+  console.log("these are the chains", chains);
+
+  useEffect(() => {
+    async function fetchUsers(contract, chain) {
+      const result = await readContract(config, {
+        chainId: chain,
+        abi: faucetAbi,
+        address: contract,
+        functionName: "numberOfRequests",
+      });
+      return Number(result);
+    }
+    async function getTotalRes() {
+      let total = 0;
+      for (let i = 0; i < chains.length; i++) {
+        const itotal = await fetchUsers(
+          faucetContractJson.contracts[chains[i].id],
+          chains[i].id
+        );
+        total += itotal;
+      }
+      setTotalRes(() => total);
+    }
+    getTotalRes();
+  }, [address, chain]);
+
+  useEffect(() => {
+    async function fetchBalance1(token, addr) {
+      const result = await readContract(config, {
+        chainId: chain?.id,
+        abi: erc20Abi,
+        address: token,
+        functionName: "balanceOf",
+        args: [addr],
+      });
+      setUsdtBalance(() => formatEther(result));
+    }
+    async function fetchBalance2(token, addr) {
+      const result = await readContract(config, {
+        chainId: chain?.id,
+        abi: erc20Abi,
+        address: token,
+        functionName: "balanceOf",
+        args: [addr],
+      });
+      setUsdcBalance(() => formatEther(result));
+    }
+    fetchBalance1(usdtToken, poolContract);
+    fetchBalance2(usdcToken, poolContract);
+  }, [address, chain, poolContract]);
 
   const handleTokenSelect = (token) => {
     setSelectedToken(token);
   };
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  if (messageId !== "") {
+    setHashUrl(() => messageId);
+    setIsModalOpen(() => true);
+    setMessageId(() => "");
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setMessageId(() => "");
+    setHashUrl(() => "");
+  };
+
+  useEffect(() => {
+    async function getSavedTransfers(id) {
+      const dataSaved = (await JSON.parse(localStorage.getItem(id))) || [];
+
+      setTransactionData(() => dataSaved);
+    }
+    getSavedTransfers(address);
+  }, [messageId, address, chain, isModalOpen]);
+
   return (
     <>
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-gray-200 px-6 py-2 rounded-lg shadow-lg">
+            <SuccessModal onClose={handleCloseModal} hashUrl={hashUrl} />
+          </div>
+        </div>
+      )}
       <div className="text-white">
         <h1 className="heading-primary">
-          Liquidity Protocol (<span className="text-red-300">Testnet</span>){" "}
+          Multichain Bridge (<span className="text-red-300">Testnet</span>){" "}
         </h1>
 
         <div className="flex flex-shrink-0 gap-4 mt-8 overflow-auto scroll-track-hide">
@@ -42,7 +154,9 @@ function Trade() {
                 Bridge TVL (USD)
               </p>
               <div className="flex items-end gap-2 mt-1">
-                <p className="text-base font-semibold leading-5">$0</p>
+                <p className="text-base font-semibold leading-5">
+                  ${totalBalance}
+                </p>
                 <p className="text-xs text-[#34D399] font-bold">7d : 0</p>
               </div>
             </div>
@@ -63,17 +177,15 @@ function Trade() {
             <img src={numbers} alt="" />
             <div>
               <p className="text-[#6D7A86] text-sm font-medium">
-                Number of DEXs Integrated
+                Number of Chains Integrated
               </p>
               <div className="flex items-end gap-2 mt-1">
-                <p className="text-base font-semibold leading-5">
-                  {statsInfo.dexesNumber}
-                </p>
+                <p className="text-base font-semibold leading-5">{5}</p>
                 <p className="text-xs text-[#34D399] font-bold">
-                  7d:{" "}
-                  {statsInfo.dexesNumber7days > 0
+                  7d: 0
+                  {/* {statsInfo.dexesNumber7days > 0
                     ? `+${statsInfo.dexesNumber7days}`
-                    : `${statsInfo.dexesNumber7days}`}
+                    : `${statsInfo.dexesNumber7days}`} */}
                 </p>
               </div>
             </div>
@@ -86,14 +198,12 @@ function Trade() {
                 Number of Users
               </p>
               <div className="flex items-end gap-2 mt-1">
-                <p className="text-base font-semibold leading-5">
-                  {statsInfo.uniqueAddresses}
-                </p>
+                <p className="text-base font-semibold leading-5">{totalRes}</p>
                 <p className="text-xs text-[#34D399] font-bold">
-                  7d:{" "}
-                  {statsInfo.uniqueAddresses7days > 0
+                  7d: 0
+                  {/* {statsInfo.uniqueAddresses7days > 0
                     ? `+${statsInfo.uniqueAddresses7days}`
-                    : `${statsInfo.uniqueAddresses7days}`}
+                    : `${statsInfo.uniqueAddresses7days}`} */}
                 </p>
               </div>
             </div>
@@ -161,8 +271,15 @@ function Trade() {
 
         {isMd ? (
           <div className="grid items-start grid-cols-2  gap-6">
-            <TopTokensList onTokenSelect={handleTokenSelect} />
-            <SwapCard selectedToken={selectedToken} />
+            <TopTokensList
+              onTokenSelect={handleTokenSelect}
+              transactionData={transactionData}
+            />
+            <SwapCard
+              selectedToken={selectedToken}
+              messageId={messageId}
+              setMessageId={setMessageId}
+            />
           </div>
         ) : (
           <Tab.Group>
@@ -192,10 +309,17 @@ function Trade() {
             </Tab.List>
             <Tab.Panels className="mt-4">
               <Tab.Panel>
-                <SwapCard selectedToken={selectedToken} />
+                <SwapCard
+                  selectedToken={selectedToken}
+                  setMessageId={setMessageId}
+                  messageId={messageId}
+                />
               </Tab.Panel>
               <Tab.Panel>
-                <TopTokensList onTokenSelect={handleTokenSelect} />
+                <TopTokensList
+                  onTokenSelect={handleTokenSelect}
+                  transactionData={transactionData}
+                />
               </Tab.Panel>
             </Tab.Panels>
           </Tab.Group>

@@ -27,7 +27,7 @@ const router = createBrowserRouter(
         <Route path="/swap">
           <Route index element={<Trade />} />
           <Route path="liquidity" element={<Liquidity />} />
-          <Route path="bridge" element={<Bridge />} />
+          <Route path="faucet" element={<Bridge />} />
         </Route>
         {/* <Route path="/liquidity">
           <Route index element={<Liquidity />} />

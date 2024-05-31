@@ -1,18 +1,15 @@
 import { useState, useEffect, useContext, useCallback } from "react";
 import { ArrowDown2, ArrowRight, Repeat, Setting4 } from "iconsax-react";
-import USDT from "../assets/svg/usdt.svg";
 
 import { ClipLoader } from "react-spinners";
 
-import ModalRight from "../common/ModalRight";
-import { erc20Abi } from "viem";
-import { useBalance, useAccount, useSendTransaction } from "wagmi";
-import { writeContract, readContract } from "@wagmi/core";
-import { avalancheFuji, sepolia } from "viem/chains";
-
-import Modal from "../common/Modal";
-import clsx from "clsx";
-import { RadioGroup } from "@headlessui/react";
+import { erc20Abi, formatEther } from "viem";
+import { useAccount, useSwitchChain } from "wagmi";
+import {
+  writeContract,
+  readContract,
+  waitForTransactionReceipt,
+} from "@wagmi/core";
 
 import Button from "./Button";
 import { toast } from "react-toastify";
@@ -20,98 +17,59 @@ import "react-toastify/dist/ReactToastify.css";
 import { parseEther } from "viem";
 import { useDebounce, useMediaQuery } from "usehooks-ts";
 
-import { ethers } from "ethers";
 import WalletsModal from "./WalletsModal";
-import { WagmiContext } from "../context/WagmiContext";
-import { NETWORK_COINS, chainAlliases } from "../constant/globalConstants";
-import SyntrumToast from "./SyntrumToast";
 
 import poolContract from "../contracts/pool.json";
 import { config } from "../Wagmi";
 import SwitchNetworkDropdown from "./SwitchNetworkDropdownSwapcard";
 import DestinationChainDropdown from "./DestinationChainDropdown";
-import { tokensSelector } from "../contracts/destination-selector";
+import {
+  tokensSelector,
+  destinationSelectors,
+} from "../contracts/destination-selector";
 import SwitchSourceToken from "./SwitchSourceToken";
 import DestinationToken from "./DestinationToken";
 
-function SwapCard({ selectedToken }) {
+function SwapCard({ setMessageId, messageId }) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [isTokenToSelected, setTokenToSelected] = useState(false);
 
   const { chain, address, isConnected } = useAccount();
+  const { chains } = useSwitchChain();
 
-  const [tokens, setTokens] = useState([]);
-  const [tokenWithBalances, setTokenBalances] = useState([]);
-
-  const [filteredTokens, setFilteredTokens] = useState([]);
-  const [filteredTokensTo, setFilteredTokensTo] = useState([]);
-
-  const [tokenOne, setTokenOne] = useState(null);
-  const [tokenTwo, setTokenTwo] = useState(null);
-
-  const [changeToken, setChangeToken] = useState(1);
-
-  const [isSwapLoading, setIsSwapLoading] = useState(false);
-  const [isActionLoading, setIsActionLoading] = useState(false);
-  const [isSwapAvailable, setIsSwapAvailable] = useState(false);
-
-  const [errorMessage, setErrorMessage] = useState("Swap");
+  const [amount, setAmount] = useState(null);
+  const [recipientAddr, setRecipientAddr] = useState(address);
+  const [curAllowance, setCurAllowance] = useState(null);
+  const [balance, setBalance] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [trxHash, setTrxHash] = useState("");
+  const [isTransfer, setIsTransfer] = useState(false);
 
   const poolAbi = poolContract.abi;
+  const poolContracts = poolContract.contracts;
   const [selectedId, setSelectedId] = useState();
-  const [switchToken, setSwitchToken] = useState("USDT");
+  const [switchToken, setSwitchToken] = useState(tokensSelector[0]);
+
+  // Storage key is the connected address
+
+  const STORAGE_KEY = address;
+  const MAX_ITEMS = 5;
+
   const isMobile = useMediaQuery("(max-width: 375px)");
 
-  useEffect(() => {
-    if (selectedToken?.type !== tokenTwo?.type) {
-      setTokenOne(selectedToken);
-    } else {
-      if (selectedToken?.type === "token") {
-        if (
-          selectedToken?.tokenData.tokenAddress !==
-          tokenTwo?.tokenData.tokenAddress
-        ) {
-          setTokenOne(selectedToken);
-        }
+  const needApproval = parseFloat(curAllowance) < parseFloat(amount);
+
+  async function handlePaste() {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text.length > 0) {
+        setRecipientAddr(() => text);
       }
+    } catch (err) {
+      console.error("Failed to reac contents");
     }
-  }, [selectedToken]);
-
-  const handleSettingsSave = () => {
-    setIsSettingsModalOpen(false);
-  };
-
-  const { data: balance } = useBalance({
-    address,
-    token:
-      tokenOne && tokenOne.type === "token"
-        ? tokenOne.tokenData.tokenAddress
-        : null,
-  });
-
-  const openModal = (id) => {
-    setChangeToken(id);
-    setIsModalOpen(true);
-
-    if (id === 1) {
-      setTokenToSelected(false);
-    } else {
-      setTokenToSelected(true);
-    }
-  };
-
-  const selectToken = (i) => {
-    if (changeToken === 1) {
-      setTokenOne(filteredTokens[i]);
-    } else {
-      setTokenTwo(filteredTokensTo[i]);
-    }
-
-    setIsModalOpen(false);
-  };
+  }
 
   const formatBalance = (number, decimal) => {
     if (number == undefined) {
@@ -126,81 +84,181 @@ function SwapCard({ selectedToken }) {
     }
   };
 
+  // useEffect(() => {
+  //   const fetchWalletBalance = async () => {
+  //     const updatedTokens = await Promise.all(
+  //       tokens.map(async (token) => {
+  //         if (token.type === "token") {
+  //           const balance = await fetchBalance({
+  //             address,
+  //             token: token.tokenData?.tokenAddress,
+  //           });
+
+  //           return { ...token, balance: balance.formatted };
+  //         } else {
+  //           const balance = await fetchBalance({
+  //             address,
+  //           });
+
+  //           return { ...token, balance: balance.formatted };
+  //         }
+  //       })
+  //     );
+
+  //     setTokenBalances(updatedTokens);
+  //   };
+
+  //   if (tokens.length > 0) {
+  //     fetchWalletBalance();
+  //   }
+  // }, [chain, tokens]);
+
+  const spender = poolContracts[chain?.id];
+
   useEffect(() => {
-    const fetchWalletBalance = async () => {
-      const updatedTokens = await Promise.all(
-        tokens.map(async (token) => {
-          if (token.type === "token") {
-            const balance = await fetchBalance({
-              address,
-              token: token.tokenData?.tokenAddress,
-            });
-
-            return { ...token, balance: balance.formatted };
-          } else {
-            const balance = await fetchBalance({
-              address,
-            });
-
-            return { ...token, balance: balance.formatted };
-          }
-        })
-      );
-
-      setTokenBalances(updatedTokens);
-    };
-
-    if (tokens.length > 0) {
-      fetchWalletBalance();
+    async function fetchBalance(addr) {
+      const result = await readContract(config, {
+        chainId: chain?.id,
+        abi: erc20Abi,
+        address: switchToken[chain?.id],
+        functionName: "balanceOf",
+        args: [addr],
+      });
+      setBalance(() => formatEther(result));
     }
-  }, [chain, tokens]);
+    if (address) {
+      fetchBalance(address);
+    }
+  }, [address, chain, switchToken]);
 
-  const contractAddress = "0x2B5474bCCCae8C9cce8D70Ed0e24B8D3797b2BAD";
+  useEffect(() => {
+    if (!address) {
+      return;
+    }
 
-  async function handleRead() {
-    const result = await readContract(config, {
-      chainId: sepolia.id,
-      abi: poolAbi,
-      address: contractAddress,
-      functionName: "getRouter",
-    });
-    console.log("Last Received Message", result);
-  }
-
-  async function handleApprove() {
-    const res = await writeContract(config, {
-      chainId: avalancheFuji.id,
-      abi: erc20Abi,
-      address: "0x17d6e28C673974Ce04a183f1195F6f03b6Fccc24",
-      functionName: "approve",
-      args: ["0x96120cBa6C7D933e06C290cC0BBE41ce17194c1F", parseEther("10000")],
-    });
-  }
-
-  function handleTransfer() {
-    async function sendFxn() {
-      const result = await writeContract(config, {
-        chainId: avalancheFuji.id,
-        abi: poolAbi,
-        address: "0x96120cBa6C7D933e06C290cC0BBE41ce17194c1F",
-        functionName: "sendTokenPayLINK",
-        args: [
-          "16015286601757825753",
-          "0x2B5474bCCCae8C9cce8D70Ed0e24B8D3797b2BAD",
-          "0x17d6e28C673974Ce04a183f1195F6f03b6Fccc24",
-          parseEther("999"),
-          "0x121334F7E1f17d76eA29fA49Ba82582BdB03eCcF",
-        ],
+    async function fetchAllowance(addr) {
+      const result = await readContract(config, {
+        chainId: chain?.id,
+        abi: erc20Abi,
+        address: switchToken[chain?.id],
+        functionName: "allowance",
+        args: [addr, spender],
       });
 
-      setHashIn(() => result);
+      setCurAllowance(() => formatEther(result));
+    }
+
+    async function fetchBalance(addr) {
+      const balRes = await readContract(config, {
+        chainId: chain?.id,
+        abi: erc20Abi,
+        address: switchToken[chain?.id],
+        functionName: "balanceOf",
+        args: [addr],
+      });
     }
 
     try {
+      fetchAllowance(address);
+
+      fetchBalance(address);
+    } catch (e) {}
+  }, [address, chain, switchToken, isProcessing]);
+
+  useEffect(() => {
+    async function awaitTransactionConfirmation(hashIn) {
+      const confirmHash = await waitForTransactionReceipt(config, {
+        chainId: chain.id,
+        hash: trxHash,
+      });
+
+      console.log("the block hash is", confirmHash);
+      const msgId =
+        confirmHash.logs.length > 5
+          ? confirmHash.logs.at(5).topics.at(1)
+          : confirmHash.logs.at(-1).topics.at(1);
+
+      setIsProcessing(() => false);
+      if (isTransfer) {
+        setMessageId(() => msgId);
+        const trxData = {
+          // details: `${amount} ${switchToken.name}: ${chain.name} to ${
+          //   chains.find((chain) => chain.id === selectedId).name // Assuming each chain object has a name property
+          // }`,
+          amount: amount,
+          from: chain.id,
+          to: selectedId,
+          name: switchToken.name,
+          id: msgId,
+          time: new Date().toLocaleDateString(),
+        };
+        // setTransferData(() => ({
+        //   details: `${amount} ${switchToken.name}: ${chain.name} to ${
+        //     chains.find((chain) => chain.id === selectedId).name // Assuming each chain object has a name property
+        //   }`,
+        //   id: confirmHash.logs.at(-1).topics.at(1), // Use the same value as for setting messageId
+        // }));
+
+        saveTransferData(trxData);
+      }
+
+      setIsTransfer(false);
+    }
+
+    if (trxHash !== "") {
+      awaitTransactionConfirmation(trxHash);
+    }
+  }, [trxHash]);
+
+  async function handleApprove() {
+    setIsProcessing(() => true);
+    const res = await writeContract(config, {
+      chainId: chain?.id,
+      abi: erc20Abi,
+      address: switchToken[chain?.id],
+      functionName: "approve",
+      args: [spender, parseEther(amount.toString())],
+    });
+    setTrxHash(() => res);
+  }
+  const receiverContract = poolContracts[selectedId];
+  function handleTransfer() {
+    async function sendFxn() {
+      const result = await writeContract(config, {
+        chainId: chain?.id,
+        abi: poolAbi,
+        address: spender,
+        functionName: "sendTokenPayLINK",
+        args: [
+          destinationSelectors[selectedId].toString(),
+          receiverContract,
+          switchToken[chain?.id],
+          parseEther(amount.toString()), //ammount
+          recipientAddr, //recipient
+        ],
+      });
+
+      setTrxHash(() => result);
+    }
+
+    try {
+      setIsTransfer(() => true);
+      setIsProcessing(() => true);
       sendFxn();
     } catch (e) {
-      setProcessing(() => false);
+      setIsProcessing(() => false);
     }
+  }
+
+  function saveTransferData(newData) {
+    let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+    if (data.length >= MAX_ITEMS) {
+      data.shift();
+    }
+
+    data.push(newData);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }
 
   return (
@@ -231,19 +289,29 @@ function SwapCard({ selectedToken }) {
               </div>
             )}
             <input
+              onChange={(e) => setAmount(e.target.value)}
               type="number"
               className="w-full text-xl font-bold text-white bg-transparent border-0 outline-none md:text-3xl placeholder:text-dark-200"
               placeholder="0.00"
+              value={!!amount && formatBalance(amount, 8)}
             />
             <button className="text-sm font-semibold text-white uppercase">
               Max
             </button>
           </div>
+
+          <div className="flex-shrink-0 space-y-2 text-right">
+            {balance && (
+              <p className="text-xs font-medium md:text-sm text-gray-200">
+                Balance: {formatBalance(balance, 2)} {switchToken.name}
+              </p>
+            )}
+          </div>
         </div>
 
-        <div className="my-6 relative text-center after:content-[''] after:absolute after:left-0 after:right-0 after:top-1/2 after:-translate-y-1/2 after:h-px after:bg-dark-300 af">
+        <div className="my-3  relative text-center after:content-[''] after:absolute after:left-0 after:right-0 after:top-1/2 after:-translate-y-1/2 after:h-px after:bg-dark-300 af">
           <button
-            className="relative z-10 p-2 rounded-lg bg-dark-300 hover:bg-dark-300/50"
+            className="relative z-10 p-1 rounded-lg bg-dark-300 hover:bg-dark-300/50"
             // onClick={switchTokensHandler}
           >
             <Repeat className="rotate-90" />
@@ -265,17 +333,54 @@ function SwapCard({ selectedToken }) {
               </div>
             )}
             <input
+              disabled={true}
               type="number"
               className="w-full text-xl font-bold text-white bg-transparent border-0 outline-none md:text-3xl placeholder:text-dark-200"
               placeholder="0.00"
               // disabled={true}
-              // value={formatBalance(tokenTwoAmount, 8)}
-              onChange={(e) => getEstimatedSwapData(e.target.value)}
+              value={!!amount && formatBalance(amount, 8)}
+              // onChange={(e) => getEstimatedSwapData(e.target.value)}
             />
           </div>
         </div>
+        {selectedId && amount > 0 && (
+          <div className=" w-full mt-5">
+            <div className="relative   ">
+              <div className="absolute -inset-x-2 -inset-y-5"></div>
 
-        {isSwapLoading && (
+              <div className="relative w-full">
+                <input
+                  onChange={(e) => setRecipientAddr(() => e.target.value)}
+                  type="text"
+                  name=""
+                  id=""
+                  placeholder="Paste recipient here"
+                  className="block w-full px-5 h-[50px] text-lg font-normal text-black placeholder-gray-600 bg-white border border-gray-300 rounded-xl focus:border-black focus:ring-1 focus:ring-black font-pj focus:outline-none"
+                  value={recipientAddr}
+                />
+
+                <div
+                  className="mt-0 absolute inset-y-0 right-0 flex items-center pr-2 cursor-pointer "
+                  onClick={handlePaste}
+                >
+                  <svg
+                    className="h-10 w-auto "
+                    viewBox="0 0 48 48"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M40 22V10C40 7.794 38.206 6 36 6H30C30 5.46957 29.7893 4.96086 29.4142 4.58579C29.0391 4.21071 28.5304 4 28 4H16C15.4696 4 14.9609 4.21071 14.5858 4.58579C14.2107 4.96086 14 5.46957 14 6H8C5.794 6 4 7.794 4 10V36C4 38.206 5.794 40 8 40H22C22 42.206 23.794 44 26 44H40C42.206 44 44 42.206 44 40V26C44 23.794 42.206 22 40 22ZM22 26V36H8V10H14V14H30V10H36V22H26C23.794 22 22 23.794 22 26ZM26 40V26H40L40.002 40H26Z"
+                      fill="black"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* {isSwapLoading && (
           <div className="flex justify-center py-8">
             <svg
               className="mr-3 -ml-1 text-white animate-spin h-9 w-9"
@@ -298,12 +403,43 @@ function SwapCard({ selectedToken }) {
               ></path>
             </svg>
           </div>
-        )}
+        )} */}
 
         <div className="mt-6">
           {isConnected ? (
+            isProcessing ? (
+              <Button>
+                <>
+                  <ClipLoader
+                    size={20}
+                    color={"#ffffff"}
+                    loading={true}
+                    className="relative top-[3px]"
+                  />
+                  <span className="ml-2">Processing...</span>
+                </>
+              </Button>
+            ) : needApproval ? (
+              <Button disabled={!amount || !selectedId} onClick={handleApprove}>
+                Approve
+              </Button>
+            ) : (
+              <Button
+                disabled={!amount || !selectedId}
+                onClick={handleTransfer}
+              >
+                Transfer Now
+              </Button>
+            )
+          ) : (
+            <Button onClick={() => setIsOpen(true)}>Connect Wallet</Button>
+          )}
+        </div>
+
+        {/* <div className="mt-6">
+          {isConnected ? (
             isSwapAvailable ? (
-              <Button disabled={isActionLoading}>
+              <Button>
                 {isActionLoading ? (
                   <>
                     <ClipLoader
@@ -324,8 +460,8 @@ function SwapCard({ selectedToken }) {
           ) : (
             <Button onClick={() => setIsOpen(true)}>Connect Wallet</Button>
           )}
-          {/* <button onClick={handleTransfer}>Buy now</button> */}
-        </div>
+          <button onClick={handleTransfer}>Buy now</button>
+        </div> */}
       </div>
 
       <WalletsModal isOpen={isOpen} onClose={() => setIsOpen(false)} />

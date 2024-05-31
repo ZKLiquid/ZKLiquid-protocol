@@ -6,10 +6,9 @@ import { toast } from "react-toastify";
 import { WagmiContext } from "../context/WagmiContext";
 import { useConnect, useDisconnect, useAccount } from "wagmi";
 import { sepolia, avalancheFuji } from "viem/chains";
+import connectIcon from "../assets/svg/connect.svg";
 
 function WalletsModal({ isOpen, onClose }) {
-  // const { connect, connectors, connectError, connectLoading, connectPending } =
-  //   useContext(WagmiContext);
   const { connect, connectors, error, isLoading, pendingConnector } =
     useConnect();
 
@@ -37,7 +36,7 @@ function WalletsModal({ isOpen, onClose }) {
               className="w-12 h-12"
               src={
                 connector.name === "WalletConnect"
-                  ? "./walletIcons/connect.svg"
+                  ? connectIcon
                   : connector.icon
               }
               alt=""

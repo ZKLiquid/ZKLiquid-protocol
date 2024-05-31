@@ -13,7 +13,7 @@ function SwitchNetworkDropdown({ width }) {
   const { chains, error, isLoading, pendingChainId, switchChain } =
     useSwitchChain();
 
-  console.log("configured chains include", chains, chain);
+  // console.log("configured chains include", chains, chain);
 
   async function handleSwitchChain() {
     const response = switchChain({ chainId: sepolia.id });

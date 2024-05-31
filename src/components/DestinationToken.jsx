@@ -42,11 +42,11 @@ function DestinationToken({ width, switchToken }) {
                 <div className="bg-[#101115] p-1 rounded-full">
                   <img
                     className="w-6 h-6"
-                    src={`/cryptoIcons/${switchToken}.svg`}
+                    src={`/cryptoIcons/${switchToken.name}.svg`}
                     alt=""
                   />
                 </div>
-                <span className="lg:hidden xl:inline">{switchToken}</span>
+                <span className="lg:hidden xl:inline">{switchToken.name}</span>
               </>
             </Menu.Button>
           </>
