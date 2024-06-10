@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 
 import logo from "../assets/images/ZKLiquidLogo.svg";
@@ -17,9 +17,27 @@ import { AnimatePresence, motion } from "framer-motion";
 import sidebarLinks from "../constant/sidebarLinks.jsx";
 
 function Header() {
-  const { isOpen, setIsOpen } = useContext(SidebarContext);
+  const { isOpen, setIsOpen, isXLM, setIsXLM, userPubKey } =
+    useContext(SidebarContext);
   const [isMobilePopupOpen, setIsMobilePopupOpen] = useState(false);
   const { isConnected } = useAccount();
+
+  function handleSetXLM(value) {
+    setIsXLM(() => value);
+    const STORAGE_KEY = userPubKey;
+    let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+  }
+
+  useEffect(() => {
+    const STORAGE_KEY = userPubKey;
+    async function fetchSelect() {
+      const storedValue = await JSON.parse(localStorage.getItem(STORAGE_KEY));
+
+      setIsXLM(() => storedValue);
+    }
+    fetchSelect();
+  }, [isXLM, userPubKey]);
 
   return (
     <div
@@ -55,28 +73,34 @@ function Header() {
             />
           </button>
 
-          <div className="flex gap-2.5">
-            {/* <h1 className="heading-primary">Liquidity Protocol</h1> */}
-            {/* {sidebarLinks.map((link) => (
-              <NavLink
-                className={({ isActive }) => {
-                  const navClasses =
-                    "py-1.5 px-5 inline-block rounded-md transition-colors hover:bg-dark-400";
-                  return isActive ? `!bg-[#2769E4] ${navClasses}` : navClasses;
-                }}
-                key={link.path}
-                to={link.path}
-              >
-                <span className="text-sm font-semibold capitalize">
-                  {link.title}
-                </span>
-              </NavLink>
-            ))} */}
-          </div>
+          <div className="flex gap-2.5"></div>
         </div>
+
         <div className="flex items-center gap-4">
+          <div className="flex items-end justify-between ">
+            <div className="flex justify-start gap-1 p-1 border border-dark-200 rounded-full">
+              <button
+                className={`text-[#FFFFFF] text-sm px-[15px] py-1 rounded-full font-bold ${
+                  isXLM ? "bg-teal-400 text-black" : "hover:bg-dark-300"
+                }`}
+                onClick={() => handleSetXLM(true)}
+              >
+                XLM
+              </button>
+              <button
+                className={`text-[#FFFFFF] text-sm px-[15px] py-1 rounded-full font-bold ${
+                  isXLM ? "hover:bg-dark-300" : "bg-teal-400 text-black"
+                }`}
+                onClick={() => handleSetXLM(false)}
+              >
+                EVM
+              </button>
+            </div>
+          </div>
           <WalletButton />
-          {isConnected && <SwitchNetworkDropdown />}
+          {(isConnected && !isXLM) || (userPubKey && isXLM) ? (
+            <SwitchNetworkDropdown />
+          ) : null}
         </div>
       </div>
 

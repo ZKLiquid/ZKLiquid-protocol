@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext, useCallback } from "react";
 import { ArrowDown2, ArrowRight, Repeat, Setting4 } from "iconsax-react";
+import { Operation, Soroban, xdr, sign } from "@stellar/stellar-sdk";
 
 import { ClipLoader } from "react-spinners";
 
@@ -30,7 +31,35 @@ import {
 import SwitchSourceToken from "./SwitchSourceToken";
 import DestinationToken from "./DestinationToken";
 
-function SwapCard({ setMessageId, messageId }) {
+import {
+  BASE_FEE,
+  FUTURENET_DETAILS,
+  depositToken,
+  getTokenInfo,
+  getTxBuilder,
+  getWalletBalance,
+  kp,
+  server,
+  submitTx,
+  transferPayout,
+  transferToEVM,
+  xlmToStroop,
+} from "../freighter-wallet/soroban";
+import {
+  getNetwork,
+  getUserInfo,
+  setAllowed,
+  signTransaction,
+} from "@stellar/freighter-api";
+import { SidebarContext } from "../context/SidebarContext";
+
+function SwapCard({
+  setMessageId,
+  messageId,
+  setUserKeyXLM,
+  setNetworkXLM,
+  userKeyXLM,
+}) {
   const [isOpen, setIsOpen] = useState(false);
 
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -39,7 +68,7 @@ function SwapCard({ setMessageId, messageId }) {
   const { chains } = useSwitchChain();
 
   const [amount, setAmount] = useState(null);
-  const [recipientAddr, setRecipientAddr] = useState(address);
+  const [recipientAddr, setRecipientAddr] = useState("");
   const [curAllowance, setCurAllowance] = useState(null);
   const [balance, setBalance] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -50,8 +79,11 @@ function SwapCard({ setMessageId, messageId }) {
   const poolContracts = poolContract.contracts;
   const [selectedId, setSelectedId] = useState();
   const [switchToken, setSwitchToken] = useState(tokensSelector[0]);
+  const [XLMbalance, setXLMbalance] = useState(0);
 
   // Storage key is the connected address
+
+  console.log("seledted id is", selectedId);
 
   const STORAGE_KEY = address;
   const MAX_ITEMS = 5;
@@ -59,6 +91,63 @@ function SwapCard({ setMessageId, messageId }) {
   const isMobile = useMediaQuery("(max-width: 375px)");
 
   const needApproval = parseFloat(curAllowance) < parseFloat(amount);
+  const selectedNetworkConfig = FUTURENET_DETAILS;
+  const {
+    isXLM,
+    userPubKey,
+    setUserPubKey,
+    selectedNetwork,
+    setSelectedNetwork,
+    freighterConnecting,
+  } = useContext(SidebarContext);
+
+  useEffect(() => {
+    //  ' AAAAAAACZWcAAAAAAAAAAQAAAAAAAAAYAAAAAHkiNRBxttGjG0hV0BXrHw1bFyHDyNsgl6jmXslrdsBbAAAAAA=='
+    async function fetchTransactionData() {
+      let txResponse = await server.getTransaction(
+        "8f8fce68d14c6a302d06cb767f419c2170cca90b33b213bc9443f6bbbe9e75ae"
+      );
+      console.log("this is the transaction data", txResponse);
+    }
+    fetchTransactionData();
+  }, []);
+
+  useEffect(() => {
+    async function fetchBalance() {
+      const txBuilder = await getTxBuilder(
+        userPubKey,
+        BASE_FEE,
+        server,
+        selectedNetworkConfig.networkPassphrase
+      );
+
+      const res = await getWalletBalance({
+        tokenId: switchToken[2024],
+        userPubKey: userPubKey,
+        txBuilderBalance: txBuilder,
+        server: server,
+      });
+
+      setXLMbalance(() => res);
+    }
+    if (userPubKey) {
+      fetchBalance();
+    }
+  }, [isXLM, userPubKey]);
+
+  useEffect(() => {
+    async function fetchConnection() {
+      const isAllowed = await setAllowed();
+      const publicKey = await getUserInfo();
+      const nt = await getNetwork();
+      setUserPubKey(() => publicKey.publicKey);
+      setSelectedNetwork(() => nt);
+    }
+    fetchConnection();
+  }, [freighterConnecting, selectedId, userPubKey]);
+
+  // console.log("the selected network is ", selectedNetwork);
+  // console.log("the selected network is ", userPubKey);
 
   async function handlePaste() {
     try {
@@ -83,6 +172,124 @@ function SwapCard({ setMessageId, messageId }) {
       return number.toString();
     }
   };
+
+  // useEffect(() => {
+  //   async function handleTransferPayout() {
+  //     const amount = Soroban.parseTokenAmount("1000", 7);
+
+  //     const txBuiderOracle = await getTxBuilder(
+  //       "GBD7AM5MWWPJTIN2NBJKYLTB342P46QRO3Q7LDJXW3LJSZZSEKALSF76",
+  //       xlmToStroop(100).toString(),
+  //       server,
+  //       selectedNetworkConfig.networkPassphrase
+  //     );
+
+  //     const res = await transferPayout({
+  //       poolContract:
+  //         "CDKPP6KCCAPGFZNOWSAQQXHKCWXRXI33QGTVZG4MUURVAIPUSQLGZVJ5",
+  //       to: "GCEL4E3OBFLW6VRDC373RIQ2ICP2ZLV3DQZRVSNUOSWFECB7RRWUVYDL",
+  //       token_address:
+  //         "CCMJ4KRNRUUO3SA36RPVXLSP364CSTTFUHLM5U767UCXTAQIE4SBYAA5",
+  //       amount: amount,
+  //       memo: "transfer payout",
+  //       txBuilderAdmin: txBuiderOracle,
+  //       server: server,
+  //     });
+
+  //     console.log("transfer payout", res);
+  //   }
+  //   handleTransferPayout();
+  // }, []);
+
+  async function oracleCallHandler(amountSent, to) {
+    const amount = Soroban.parseTokenAmount(amountSent, 7);
+
+    const txBuiderOracle = await getTxBuilder(
+      "GBD7AM5MWWPJTIN2NBJKYLTB342P46QRO3Q7LDJXW3LJSZZSEKALSF76",
+      xlmToStroop(100).toString(),
+      server,
+      selectedNetworkConfig.networkPassphrase
+    );
+
+    const res = await transferPayout({
+      poolContract: "CDKPP6KCCAPGFZNOWSAQQXHKCWXRXI33QGTVZG4MUURVAIPUSQLGZVJ5",
+      to: to,
+      token_address: "CCMJ4KRNRUUO3SA36RPVXLSP364CSTTFUHLM5U767UCXTAQIE4SBYAA5",
+      amount: amount,
+      memo: "transfer payout",
+      txBuilderAdmin: txBuiderOracle,
+      server: server,
+    });
+
+    // console.log("transfer payout", res);
+  }
+
+  async function handleDepositTokenXLM() {
+    const amount = Soroban.parseTokenAmount("1000", 7);
+
+    const txBuiderTransfer = await getTxBuilder(
+      "GBD7AM5MWWPJTIN2NBJKYLTB342P46QRO3Q7LDJXW3LJSZZSEKALSF76",
+      xlmToStroop(100).toString(),
+      server,
+      selectedNetworkConfig.networkPassphrase
+    );
+
+    const xdr = await depositToken({
+      poolContract: "CDKPP6KCCAPGFZNOWSAQQXHKCWXRXI33QGTVZG4MUURVAIPUSQLGZVJ5",
+      from: "GBD7AM5MWWPJTIN2NBJKYLTB342P46QRO3Q7LDJXW3LJSZZSEKALSF76",
+      token_address: "CCMJ4KRNRUUO3SA36RPVXLSP364CSTTFUHLM5U767UCXTAQIE4SBYAA5",
+      amount: amount,
+      memo: "deposit",
+      txBuilderAdmin: txBuiderTransfer,
+      server: server,
+    });
+
+    // console.log("deposit transaction", xdr);
+
+    const signature = await signTransaction(xdr, { network: "FUTURENET" });
+
+    const result = await submitTx(
+      signature,
+      selectedNetworkConfig.networkPassphrase,
+      server
+    );
+
+    // console.log("deposit confirmed", result);
+  }
+
+  async function handleTransferXLM() {
+    const amountSent = Soroban.parseTokenAmount(amount, 7);
+
+    const txBuiderTransfer = await getTxBuilder(
+      userPubKey,
+      xlmToStroop(100).toString(),
+      server,
+      selectedNetworkConfig.networkPassphrase
+    );
+
+    const xdr = await transferToEVM({
+      poolContract: "CDKPP6KCCAPGFZNOWSAQQXHKCWXRXI33QGTVZG4MUURVAIPUSQLGZVJ5",
+      from: userPubKey,
+      to: "0x5e393d56389C0A76968A02C8d4cB71D3A048c5c7",
+      token_address: "CCMJ4KRNRUUO3SA36RPVXLSP364CSTTFUHLM5U767UCXTAQIE4SBYAA5",
+      amount: amountSent,
+      memo: "transfer to EVM",
+      txBuilderAdmin: txBuiderTransfer,
+      server: server,
+    });
+
+    // console.log("deposit transaction", xdr);
+
+    const signature = await signTransaction(xdr, { network: "FUTURENET" });
+
+    const result = await submitTx(
+      signature,
+      selectedNetworkConfig.networkPassphrase,
+      server
+    );
+
+    // console.log("deposit confirmed", result);
+  }
 
   const spender = poolContracts[chain?.id];
 
@@ -143,7 +350,7 @@ function SwapCard({ setMessageId, messageId }) {
         hash: trxHash,
       });
 
-      console.log("the block hash is", confirmHash);
+      // console.log("the block hash is", confirmHash);
       const msgId =
         confirmHash.logs.length > 5
           ? confirmHash.logs.at(5).topics.at(1)
@@ -160,7 +367,7 @@ function SwapCard({ setMessageId, messageId }) {
           //   chains.find((chain) => chain.id === selectedId).name // Assuming each chain object has a name property
           // }`,
           amount: amount,
-          from: chain.id,
+          from: isXLM ? 2024 : chain.id,
           to: selectedId,
           name: switchToken.name,
           id: msgId,
@@ -194,6 +401,23 @@ function SwapCard({ setMessageId, messageId }) {
       args: [spender, parseEther(amount.toString())],
     });
     setTrxHash(() => res);
+  }
+
+  async function handleTransferToXLM() {
+    setIsProcessing(() => true);
+    const res = await writeContract(config, {
+      chainId: chain?.id,
+      abi: erc20Abi,
+      address: switchToken[chain?.id],
+      functionName: "transfer",
+      args: [
+        "0x3D356Ed57d221402417e93A7B5686F4ca0fd1263",
+        parseEther(amount.toString()),
+      ],
+    });
+    setTrxHash(() => res);
+
+    await oracleCallHandler(amount, recipientAddr);
   }
   const receiverContract = poolContracts[selectedId];
   function handleTransfer() {
@@ -284,7 +508,8 @@ function SwapCard({ setMessageId, messageId }) {
           <div className="flex-shrink-0 space-y-2 text-right">
             {balance && (
               <p className="text-xs font-medium md:text-sm text-gray-200">
-                Balance: {formatBalance(balance, 2)} {switchToken.name}
+                Balance: {isXLM ? XLMbalance : formatBalance(balance, 2)}{" "}
+                {switchToken.name}
               </p>
             )}
           </div>
@@ -387,7 +612,7 @@ function SwapCard({ setMessageId, messageId }) {
         )} */}
 
         <div className="mt-6">
-          {isConnected ? (
+          {(isConnected && !isXLM) || (userPubKey && isXLM) ? (
             isProcessing ? (
               <Button>
                 <>
@@ -400,14 +625,20 @@ function SwapCard({ setMessageId, messageId }) {
                   <span className="ml-2">Processing...</span>
                 </>
               </Button>
-            ) : needApproval ? (
+            ) : needApproval && !isXLM ? (
               <Button disabled={!amount || !selectedId} onClick={handleApprove}>
                 Approve
               </Button>
             ) : (
               <Button
                 disabled={!amount || !selectedId}
-                onClick={handleTransfer}
+                onClick={
+                  isXLM
+                    ? handleTransferXLM
+                    : selectedId === 2024
+                    ? handleTransferToXLM
+                    : handleTransfer
+                }
               >
                 Transfer Now
               </Button>
@@ -445,7 +676,15 @@ function SwapCard({ setMessageId, messageId }) {
         </div> */}
       </div>
 
-      <WalletsModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      {/* <button onClick={handleTransferPayout}> transfer Test</button> */}
+
+      <WalletsModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        setUserKeyXLM={setUserKeyXLM}
+        setNetworkXLM={setNetworkXLM}
+        userKeyXLM={userKeyXLM}
+      />
     </>
   );
 }

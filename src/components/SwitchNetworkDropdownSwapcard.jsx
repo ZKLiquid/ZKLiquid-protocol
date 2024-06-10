@@ -1,4 +1,4 @@
-import { Fragment, useEffect } from "react";
+import { Fragment, useEffect, useContext } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { useAccount, useSwitchChain } from "wagmi";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
@@ -7,8 +7,10 @@ import { ArrowDown2 } from "iconsax-react";
 import { toast } from "react-toastify";
 import { config } from "../Wagmi";
 import { avalancheFuji, sepolia } from "viem/chains";
+import { SidebarContext } from "../context/SidebarContext";
 
 function SwitchNetworkDropdown({ width, isMobile }) {
+  const { isXLM, userPubKey, selectedNetwork } = useContext(SidebarContext);
   const { chain } = useAccount();
   const { chains, error, isLoading, pendingChainId, switchChain } =
     useSwitchChain();
@@ -17,6 +19,10 @@ function SwitchNetworkDropdown({ width, isMobile }) {
   async function handleSwitchChain() {
     const response = switchChain({ chainId: sepolia.id });
   }
+
+  const XLM_Chain = { name: "FUTURENET", id: 2024 };
+
+  const allChains = isXLM ? [XLM_Chain] : chains;
 
   useEffect(() => {
     if (error && error.message) {
@@ -49,7 +55,22 @@ function SwitchNetworkDropdown({ width, isMobile }) {
               />
             </div>
             <span className="lg:hidden xl:inline">{chain?.name}</span> */}
-            {chain ? (
+            {isXLM ? (
+              <>
+                <div className="bg-[#101115] p-1 rounded-full">
+                  <img
+                    className="w-6 h-6"
+                    src={`/cryptoIcons/${allChains[0]?.id}.svg`}
+                    alt=""
+                  />
+                </div>
+                <span className="lg:hidden xl:inline">
+                  {allChains[0]?.name.length > nameLength
+                    ? allChains[0]?.name.slice(0, nameLength - 3) + "..."
+                    : allChains[0]?.name}
+                </span>
+              </>
+            ) : chain ? (
               <>
                 <div className="bg-[#101115] p-1 rounded-full">
                   <img
@@ -97,7 +118,7 @@ function SwitchNetworkDropdown({ width, isMobile }) {
             leaveTo="transform scale-95 opacity-0"
           >
             <Menu.Items className="absolute right-0 z-10 w-56 py-1 mt-2 origin-top-right border rounded-md shadow-lg bg-dark-400 border-dark-300 ring-1 ring-black ring-opacity-5 focus:outline-none">
-              {chains.map((x) => (
+              {allChains.map((x) => (
                 <Menu.Item key={x.id}>
                   <button
                     disabled={!switchChain || x.id === chain?.id}

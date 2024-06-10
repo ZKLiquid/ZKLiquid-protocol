@@ -54,7 +54,8 @@ function Trade() {
 
   const faucetAbi = faucetContractJson.abi;
 
-  console.log("these are the chains", chains);
+  const [userKeyXLM, setUserKeyXLM] = useState("");
+  const [networkXLM, setNetworkXLM] = useState("");
 
   useEffect(() => {
     async function fetchUsers(contract, chain) {
@@ -279,6 +280,9 @@ function Trade() {
               selectedToken={selectedToken}
               messageId={messageId}
               setMessageId={setMessageId}
+              setUserKeyXLM={setUserKeyXLM}
+              setNetworkXLM={setNetworkXLM}
+              userKeyXLM={userKeyXLM}
             />
           </div>
         ) : (
@@ -313,6 +317,9 @@ function Trade() {
                   selectedToken={selectedToken}
                   setMessageId={setMessageId}
                   messageId={messageId}
+                  setUserKeyXLM={setUserKeyXLM}
+                  setNetworkXLM={setNetworkXLM}
+                  userKeyXLM={userKeyXLM}
                 />
               </Tab.Panel>
               <Tab.Panel>

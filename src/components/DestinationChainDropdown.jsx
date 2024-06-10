@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState, useContext } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { useAccount, useSwitchChain } from "wagmi";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
@@ -6,8 +6,8 @@ import clsx from "clsx";
 import { ArrowDown2 } from "iconsax-react";
 import { toast } from "react-toastify";
 import { config } from "../Wagmi";
-import { avalancheFuji, sepolia } from "viem/chains";
 import { destinationSelectors } from "../contracts/destination-selector";
+import { SidebarContext } from "../context/SidebarContext";
 
 function DestinationChainDropdown({
   width,
@@ -18,21 +18,23 @@ function DestinationChainDropdown({
   const { chain } = useAccount();
   const { chains, error, isLoading, pendingChainId, switchChain } =
     useSwitchChain();
+  const { isXLM } = useContext(SidebarContext);
 
-  // const [selectedId, setSelectedId] = useState(11155111);
-  const destinationSelected = selectedId && destinationSelectors[selectedId];
+  const XLM_Chain = { name: "FUTURENET", id: 2024 };
+
+  const allChains = isXLM ? chains : [XLM_Chain, ...chains];
+
   const selectedDestinationChain =
-    selectedId && chains.filter((x) => x.id === selectedId);
+    selectedId && allChains.filter((x) => x.id === selectedId);
 
   const nameLength = isMobile ? 10 : 14;
 
-  // console.log(
-  //   "selected destination",
-  //   selectedId,
-  //   destinationSelected,
-  //   selectedDestinationChain[0]?.name
-  // );
-
+  function handleSelectXLM() {
+    setSelectedId(() => 2024);
+  }
+  useEffect(() => {
+    setSelectedId();
+  }, [isXLM]);
   useEffect(() => {
     if (error && error.message) {
       toast.error(error.message);
@@ -109,9 +111,10 @@ function DestinationChainDropdown({
             leaveTo="transform scale-95 opacity-0"
           >
             <Menu.Items className="absolute right-0 z-10 w-56 py-1 mt-2 origin-top-right border rounded-md shadow-lg bg-dark-400 border-dark-300 ring-1 ring-black ring-opacity-5 focus:outline-none">
-              {chains.map((x) => (
+              {allChains.map((x) => (
                 <Menu.Item key={x.id}>
                   <button
+                    key={x.id}
                     disabled={!switchChain || x.id === chain?.id}
                     // onClick={() => switchChain?.(x.id)}
                     onClick={() => setSelectedId(x.id)}

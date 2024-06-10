@@ -1,4 +1,4 @@
-import { Fragment, useEffect } from "react";
+import { Fragment, useContext, useEffect } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { useAccount, useSwitchChain } from "wagmi";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
@@ -7,6 +7,7 @@ import { ArrowDown2 } from "iconsax-react";
 import { toast } from "react-toastify";
 import { config } from "../Wagmi";
 import { avalancheFuji, sepolia } from "viem/chains";
+import { SidebarContext } from "../context/SidebarContext";
 
 function SwitchNetworkDropdown({ width }) {
   const { chain } = useAccount();
@@ -18,6 +19,7 @@ function SwitchNetworkDropdown({ width }) {
   async function handleSwitchChain() {
     const response = switchChain({ chainId: sepolia.id });
   }
+  const { isXLM, userPubKey, selectedNetwork } = useContext(SidebarContext);
 
   useEffect(() => {
     if (error && error.message) {
@@ -42,7 +44,18 @@ function SwitchNetworkDropdown({ width }) {
               open ? "bg-dark-300" : "bg-dark-400"
             )}
           >
-            {chain ? (
+            {isXLM ? (
+              <>
+                <div className="bg-[#101115] p-1 rounded-full">
+                  <img
+                    className="w-6 h-6"
+                    src={`/cryptoIcons/${2024}.svg`}
+                    alt=""
+                  />
+                </div>
+                <span className="lg:hidden xl:inline">{selectedNetwork}</span>
+              </>
+            ) : chain ? (
               <>
                 <div className="bg-[#101115] p-1 rounded-full">
                   <img
@@ -72,7 +85,7 @@ function SwitchNetworkDropdown({ width }) {
               color="#fff"
               className={clsx(
                 "transition-transform will-change-transform ml-auto",
-                open && "rotate-180"
+                !isXLM && open && "rotate-180"
               )}
             />
           </Menu.Button>
@@ -86,27 +99,28 @@ function SwitchNetworkDropdown({ width }) {
             leaveTo="transform scale-95 opacity-0"
           >
             <Menu.Items className="absolute right-0 z-10 w-56 py-1 mt-2 origin-top-right border rounded-md shadow-lg bg-dark-400 border-dark-300 ring-1 ring-black ring-opacity-5 focus:outline-none">
-              {chains.map((x) => (
-                <Menu.Item key={x?.id}>
-                  <button
-                    disabled={!switchChain || x?.id === chain?.id}
-                    // onClick={() => switchChain?.(x.id)}
-                    onClick={() => switchChain({ chainId: x?.id })}
-                    className={clsx(
-                      "px-4 py-2 text-sm transition-colors flex items-center gap-2 w-full text-left hover:bg-dark-300",
-                      !switchChain || (x?.id === chain?.id && "!hidden")
-                    )}
-                  >
-                    <img
-                      className="w-6 h-6"
-                      src={`/cryptoIcons/${x?.id}.svg`}
-                      alt=""
-                    />
-                    {x.name}
-                    {isLoading && pendingChainId === x.id && " (switching)"}
-                  </button>
-                </Menu.Item>
-              ))}
+              {!isXLM &&
+                chains.map((x) => (
+                  <Menu.Item key={x?.id}>
+                    <button
+                      disabled={!switchChain || x?.id === chain?.id}
+                      // onClick={() => switchChain?.(x.id)}
+                      onClick={() => switchChain({ chainId: x?.id })}
+                      className={clsx(
+                        "px-4 py-2 text-sm transition-colors flex items-center gap-2 w-full text-left hover:bg-dark-300",
+                        !switchChain || (x?.id === chain?.id && "!hidden")
+                      )}
+                    >
+                      <img
+                        className="w-6 h-6"
+                        src={`/cryptoIcons/${x?.id}.svg`}
+                        alt=""
+                      />
+                      {x.name}
+                      {isLoading && pendingChainId === x.id && " (switching)"}
+                    </button>
+                  </Menu.Item>
+                ))}
             </Menu.Items>
           </Transition>
         </>
